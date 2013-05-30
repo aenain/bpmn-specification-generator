@@ -1,14 +1,16 @@
-# add to the load path
-$: << __dir__ + "/lib"
-$: << __dir__ + "/app/models"
-
 require 'bundler/setup'
 require 'sinatra/base'
 require 'sinatra/assetpack'
 require 'sinatra/content_for'
 require 'sinatra/activerecord'
 
-require 'bpmn'
+# add to the load path
+MODELS_PATH = File.join('app', 'models')
+$: << File.join(__dir__, MODELS_PATH)
+$: << File.join(__dir__, 'lib')
+
+# require all models
+Dir.glob(File.join('.', MODELS_PATH, '*.rb')) { |model| require model }
 
 # run with: ruby app.rb
 # to bind ip: ruby app.rb 127.0.0.1
