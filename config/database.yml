@@ -1,0 +1,21 @@
+defaults: &defaults
+  adapter: postgresql
+  encoding: utf8
+  username: bpmn
+  password: '21381926387sadakfd@!#'
+  host: localhost
+
+development:
+  <<: *defaults
+  database: bpmn_dev
+
+test:
+  <<: *defaults
+  database: bpmn_test
+
+staging:
+  <<: *defaults
+  database: bpmn_staging
+
+production:
+  database: bpmn_prod
