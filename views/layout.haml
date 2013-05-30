@@ -1,0 +1,12 @@
+!!!
+%html
+  %head
+    %title BPEL Specification Generator
+    = css :all
+    = yield_content(:head)
+
+  %body
+    = yield
+
+    = js :all
+    = yield_content(:javascripts)
