@@ -14,8 +14,9 @@ gem 'sinatra-activerecord', '~> 1.3.0.beta2', git: 'git@github.com:sge/sinatra-a
 gem 'serialize-activerecord', git: 'git@github.com:aenain/serialize-activerecord.git'
 gem 'pg', '~> 0.15.1'
 gem 'rake', '~> 10.0.4'
-gem 'pry-debugger'
 
 group :development, :test do
+  gem 'annotate', '~> 2.5.0'
+  gem 'pry-debugger', require: false
   gem 'em-websocket', '~> 0.5.0', require: false
 end
