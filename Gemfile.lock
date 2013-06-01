@@ -1,5 +1,5 @@
 GIT
-  remote: git@github.com:aenain/serialize-activerecord.git
+  remote: git://github.com/aenain/serialize-activerecord.git
   revision: 18a71edeffd9e38fe28fab45a2b0775210c6c5db
   specs:
     serialize-activerecord (0.0.1)
@@ -7,7 +7,7 @@ GIT
       ox
 
 GIT
-  remote: git@github.com:sge/sinatra-activerecord.git
+  remote: git://github.com/sge/sinatra-activerecord.git
   revision: b39aa1baee5503e3c21ff6887e2fd727516e6eb1
   branch: activerecord4
   specs:
