@@ -1,7 +1,7 @@
 module Bpmn
   module Graph
     class SubProcess < Activity
-      attr_accessor :entry_points
+      include ::Bpmn::Graph::Building
     end
   end
 end

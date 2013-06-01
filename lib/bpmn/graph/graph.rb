@@ -21,22 +21,7 @@
 module Bpmn
   module Graph
     class Graph
-      attr_accessor :entry_points
-
-      def initialize(entry_points: [])
-        @entry_points = entry_points
-      end
-
-      def first_node
-        @entry_points.first
-      end
-
-      def create_node(type, **node_options)
-        klass = "bpmn/graph/#{type}".to_s.camelize.constantize
-        klass.new(**node_options).tap do |node|
-          self.entry_points.push(node) if type == :start_event
-        end
-      end
+      include ::Bpmn::Graph::Building
     end
   end
 end

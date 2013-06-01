@@ -1,10 +1,10 @@
 module Bpmn
   module Graph
     class BaseElement
-      attr_accessor :representation, :id
+      attr_reader :representation, :ref_id
 
-      def initialize(id: nil, representation: nil)
-        @id = id
+      def initialize(ref_id: nil, representation: nil)
+        @ref_id = ref_id
         @representation = representation
       end
 
