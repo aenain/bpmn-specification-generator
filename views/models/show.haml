@@ -1,5 +1,15 @@
-%div
-  description #{@model.description}
+%canvas#canvas(data-fullscreen="true")
 
-%div
-  xml #{h @model.raw_xml}
+- content_for(:javascripts) do
+  :coffeescript
+    fullscreenElements = document.querySelectorAll("[data-fullscreen='true']")
+    for element in fullscreenElements
+      element.style.width = window.innerWidth + 'px'
+      element.style.height = window.innerHeight + 'px'
+      element.width = window.innerWidth
+      element.height = window.innerHeight
+
+    canvas = document.querySelector('#canvas')
+    drawer = new Diagram.Drawer(canvas)
+    drawer.drawActivity({ top: 10, left: 10, width: 100, height: 50 }, "elo morelo trello wtff ja robie")
+    drawer.drawStartEvent({ top: 200, left: 200, width: 20, height: 20 }, "elo morelo trello wtf ja robie")

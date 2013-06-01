@@ -8,8 +8,7 @@
     = yield_content(:head)
 
   %body
-    - container :fluid do
-      = yield
+    = yield
 
     = js :all
     = yield_content(:javascripts)
