@@ -2,6 +2,7 @@ require 'serialize_active_record'
 
 class Diagram < ActiveRecord::Base
   serialize :graph, format: :marshal, gzip: true
+  serialize :visualization, format: :marshal, gzip: true
 
   belongs_to :graph_representable, polymorphic: true
 
@@ -23,5 +24,6 @@ end
 #  created_at               :datetime
 #  updated_at               :datetime
 #  pattern_extraction       :boolean          default(FALSE)
+#  visualization            :binary
 #
 
