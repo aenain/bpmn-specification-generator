@@ -2,7 +2,7 @@ defaults: &defaults
   adapter: postgresql
   encoding: utf8
   username: bpmn
-  password: '21381926387sadakfd@!#'
+  password:
   host: localhost
 
 development:
