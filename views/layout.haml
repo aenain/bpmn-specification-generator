@@ -2,11 +2,14 @@
 %html
   %head
     %title BPMN Specification Generator
+    = bootstrap_assets
     = css :all
+    = include_gon
     = yield_content(:head)
 
   %body
-    = yield
+    - container :fluid do
+      = yield
 
     = js :all
     = yield_content(:javascripts)

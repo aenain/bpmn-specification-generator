@@ -1,3 +1,5 @@
+require 'bpmn'
+
 class BusinessModel < ActiveRecord::Base
   has_one :diagram, -> { where(pattern_extraction: false) }, as: :graph_representable
   has_one :diagram_with_patterns, -> { where(pattern_extraction: true) }, class_name: "Diagram", as: :graph_representable

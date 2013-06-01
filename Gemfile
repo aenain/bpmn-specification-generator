@@ -14,6 +14,8 @@ gem 'sinatra-activerecord', '~> 1.3.0.beta2', git: 'git@github.com:sge/sinatra-a
 gem 'serialize-activerecord', git: 'git@github.com:aenain/serialize-activerecord.git'
 gem 'pg', '~> 0.15.1'
 gem 'rake', '~> 10.0.4'
+gem 'gon-sinatra', '~> 0.1.0'
+gem 'sinatra-twitter-bootstrap', '~> 2.3.1.1', require: 'sinatra/twitter-bootstrap'
 
 group :development, :test do
   gem 'annotate', '~> 2.5.0'

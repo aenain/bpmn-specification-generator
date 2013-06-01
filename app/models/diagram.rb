@@ -1,7 +1,14 @@
+require 'serialize_active_record'
+
 class Diagram < ActiveRecord::Base
   serialize :graph, format: :marshal, gzip: true
 
   belongs_to :graph_representable, polymorphic: true
+
+  def build_graph(raw_xml)
+    # parse raw_xml
+    self.graph = Bpmn::Graph::Graph.new
+  end
 end
 
 # == Schema Information

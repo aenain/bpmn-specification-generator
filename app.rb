@@ -3,6 +3,9 @@ require 'sinatra/base'
 require 'sinatra/assetpack'
 require 'sinatra/content_for'
 require 'sinatra/activerecord'
+require 'sinatra/twitter-bootstrap'
+require 'gon-sinatra'
+require 'pry-debugger'
 
 # add to the load path
 MODELS_PATH = File.join('app', 'models')
@@ -20,6 +23,8 @@ class App < Sinatra::Base
 
   register Sinatra::AssetPack
   register Sinatra::ActiveRecordExtension
+  register Sinatra::Twitter::Bootstrap::Assets
+  register Gon::Sinatra
   helpers Sinatra::ContentFor
 
   assets do
@@ -31,8 +36,40 @@ class App < Sinatra::Base
     css :all, %w[/stylesheets/*.css]
   end
 
+  helpers do
+    include Rack::Utils
+    alias_method :h, :escape_html
+  end
+
+  # routing
   get '/' do
-    haml :index
+    redirect '/models/new'
+  end
+
+  get '/models/new' do
+    haml 'models/new'.to_sym
+  end
+
+  post '/models' do
+    @model = BusinessModel.new
+    @model.description = params[:business_model][:description]
+    @model.raw_xml = params[:business_model][:raw_xml][:tempfile].read
+    diagram = @model.build_diagram
+    diagram.build_graph(@model.raw_xml)
+
+    binding.pry
+
+    if @model.save
+      redirect "/models/#{@model.id}"
+    else
+      # TODO! error handling?
+      redirect "/models/new"
+    end
+  end
+
+  get '/models/:id' do
+    @model = BusinessModel.find(params[:id])
+    haml 'models/show'.to_sym
   end
 
   # start the server only if it has been called as $ ruby app.rb
