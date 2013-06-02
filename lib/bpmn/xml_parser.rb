@@ -88,6 +88,7 @@ module Bpmn
       xml_node.attributes.values.inject({}) do |hash, attr|
         value = parse_value(attr.value)
         hash[attr.name.underscore.to_sym] = value
+        hash
       end
     end
 

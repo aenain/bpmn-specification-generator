@@ -1,5 +1,6 @@
 require 'active_support/concern'
 require 'active_support/inflector'
+require 'pry-debugger'
 
 module Bpmn
   module Graph
@@ -9,7 +10,7 @@ module Bpmn
       included do
         attr_reader :entry_nodes, :sub_processes
 
-        %w(node connection).each do |resource|
+        %w(node connector).each do |resource|
           resources = resource.pluralize
 
           class_eval <<-LOOKUP, __FILE__, __LINE__ + 1
@@ -62,10 +63,10 @@ module Bpmn
       end
 
       def create_connector(**connector_options)
-        connector_options[:start_node] = lookup_node(connector_options.delete(:start_ref_id))
-        connector_options[:end_node] = lookup_node(connector_options.delete(:end_ref_id))
+        start_node = lookup_node(connector_options.delete(:start_ref_id))
+        end_node = lookup_node(connector_options.delete(:end_ref_id))
 
-        Bpmn::Graph::Connector.new(**connector_options).tap do |connector|
+        start_node.connect_with(end_node, **connector_options).tap do |connector|
           store_connector_reference(connector.ref_id, connector)
         end
       end

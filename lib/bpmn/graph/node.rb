@@ -4,7 +4,7 @@ module Bpmn
       attr_accessor :connections, :back_connections
 
       def initialize(connections: [], back_connections: [], **options)
-        super(options)
+        super(**options)
         @connections = connections
         @back_connections = back_connections
       end

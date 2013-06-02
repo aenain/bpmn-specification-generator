@@ -8,7 +8,7 @@ module Bpmn
       def initialize(type: :none, **options)
         raise ArgumentError "undefined event type" unless TYPES.include?(type)
 
-        super(options)
+        super(**options)
         @type = type
       end
     end
