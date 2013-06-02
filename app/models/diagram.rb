@@ -7,8 +7,7 @@ class Diagram < ActiveRecord::Base
   belongs_to :graph_representable, polymorphic: true
 
   def build_graph(raw_xml)
-    # parse raw_xml
-    self.graph = Bpmn::Graph::Graph.new
+    self.graph = Bpmn::XmlParser.new(raw_xml).parse
   end
 end
 

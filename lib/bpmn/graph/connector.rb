@@ -6,6 +6,8 @@ module Bpmn
       attr_accessor :start_node, :end_node, :type
 
       def initialize(start_node: nil, end_node: nil, type: :sequence_flow, **options)
+        raise ArgumentError "undefined start node" unless start_node
+        raise ArgumentError "undefined end node" unless end_node
         raise ArgumentError "undefined connector type" unless TYPES.include?(type)
 
         super(options)
