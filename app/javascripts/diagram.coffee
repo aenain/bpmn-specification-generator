@@ -28,6 +28,12 @@ class Diagram.Shape
       stroke:
         width: 2
         color: 'black'
+    end_event:
+      fill:
+        color: 'red'
+      stroke:
+        width: 2
+        color: 'black'
 
   constructor: (@box, @type) ->
     @style = Diagram.Shape.STYLES[@type]
@@ -108,6 +114,46 @@ class Diagram.Label
       left: Math.round((boundaries.left + boundaries.right) / 2)
       top: Math.round((boundaries.top + boundaries.bottom) / 2)
 
+class Diagram.Path
+  @STYLES =
+    stroke:
+      width: 2
+      color: 'black'
+
+  constructor: (@waypoints) ->
+    @style = Diagram.Path.STYLES
+
+class Diagram.Model
+  constructor: (@canvas, @data) ->
+    @drawer = null # we have to resize canvas first
+
+  init: ->
+    @resizeCanvas()
+    @createDrawer()
+
+  drawElements: ->
+    @drawNodes()
+    @drawConnectors()
+
+  resizeCanvas: ->
+    @canvas.width = @data.width
+    @canvas.height = @data.height
+
+  createDrawer: ->
+    @drawer = new Diagram.Drawer(@canvas)
+
+  drawNodes: ->
+    for node in @data.nodes
+      switch node.class
+        when 'Task'         then @drawer.drawActivity(node.position, node.label)
+        when 'StartEvent'   then @drawer.drawStartEvent(node.position, node.label)
+        when 'EndEvent'     then @drawer.drawEndEvent(node.position, node.label)
+
+  drawConnectors: ->
+    for connector in @data.connectors
+      switch connector.type
+        when 'sequence_flow'  then @drawer.drawConnector(connector.waypoints, connector.label)
+
 class Diagram.Drawer
   constructor: (@canvas) ->
     @context = @canvas.getContext('2d')
@@ -145,6 +191,29 @@ class Diagram.Drawer
     @drawLabel(label)
 
   #
+  # @param position Object(top, left, width, height)
+  # @param text String
+  #
+  drawEndEvent: (position, text) ->
+    shape = new Diagram.Shape(position, 'end_event')
+    label = new Diagram.Label(text, @font)
+    label.setMeasurer(@measurer)
+    label.placeUnder(shape.getBoundaries())
+
+    @drawCircle(shape)
+    @drawLabel(label)
+
+  #
+  # @param waypoints [Object(top, left)]
+  # @param text String
+  #
+  drawConnector: (waypoints, text) ->
+    path = new Diagram.Path(waypoints)
+    # label = new Diagram.Label(text, @font)
+    @drawPath(path)
+    # @drawLabel(label)
+
+  #
   # @param shape Diagram.Shape
   # @param callback callback that gets styled context as the only argument
   #
@@ -172,6 +241,29 @@ class Diagram.Drawer
     for line in label.lines
       @context.fillText(line, linePosition.left, linePosition.top)
       linePosition.top += label.style.lineHeight
+
+  #
+  # @param path Diagram.Path
+  #
+  drawPath: (path) ->
+    startPoint = path.waypoints.shift()
+    endPoint = path.waypoints[path.waypoints.length - 1]
+    angle = 0
+    headLength = 7
+
+    @withOpenPath path.style, (context) =>
+      context.moveTo(startPoint.left, startPoint.top)
+      previousPoint = startPoint
+
+      for waypoint in path.waypoints
+        angle = Math.atan2(waypoint.top - previousPoint.top, waypoint.left - previousPoint.left)
+        context.lineTo(waypoint.left, waypoint.top)
+        previousPoint = waypoint
+
+      # draw arrow (http://stackoverflow.com/questions/808826/draw-arrow-on-canvas-tag#answer-6333775)
+      context.lineTo(endPoint.left - headLength * Math.cos(angle-Math.PI/6), endPoint.top - headLength * Math.sin(angle-Math.PI/6))
+      context.moveTo(endPoint.left, endPoint.top)
+      context.lineTo(endPoint.left - headLength * Math.cos(angle+Math.PI/6), endPoint.top - headLength * Math.sin(angle+Math.PI/6))
 
   withOpenPath: (style, callback) ->
     @context.beginPath()

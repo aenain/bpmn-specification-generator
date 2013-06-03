@@ -9,6 +9,10 @@ class Diagram < ActiveRecord::Base
   def build_graph(raw_xml)
     self.graph = Bpmn::XmlParser.new(raw_xml).parse
   end
+
+  def prepare_visualization
+    self.visualization = Bpmn::VisualizationSerializer.new(graph).serialize
+  end
 end
 
 # == Schema Information

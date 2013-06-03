@@ -5,6 +5,7 @@ require 'sinatra/content_for'
 require 'sinatra/activerecord'
 require 'sinatra/twitter-bootstrap'
 require 'gon-sinatra'
+require 'json'
 require 'pry-debugger'
 
 # add to the load path
@@ -56,8 +57,7 @@ class App < Sinatra::Base
     @model.raw_xml = params[:business_model][:raw_xml][:tempfile].read
     diagram = @model.build_diagram
     diagram.build_graph(@model.raw_xml)
-
-    binding.pry
+    diagram.prepare_visualization
 
     if @model.save
       redirect "/models/#{@model.id}"
@@ -69,6 +69,7 @@ class App < Sinatra::Base
 
   get '/models/:id' do
     @model = BusinessModel.find(params[:id])
+    gon.visualization_data = JSON.parse(@model.diagram.visualization)
     haml 'models/show'.to_sym
   end
 

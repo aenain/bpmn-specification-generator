@@ -84,6 +84,16 @@ module Bpmn
         element
       end
 
+      def get_elements(nested: false)
+        ref_elements.values.tap do |elements|
+          sub_processes.each do |process|
+            elements.concat process.get_elements(nested: nested)
+          end if nested
+        end
+      end
+
+      private 
+
       def ref_elements
         @ref_elements ||= {}
       end
