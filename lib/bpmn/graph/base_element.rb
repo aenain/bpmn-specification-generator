@@ -1,16 +1,11 @@
 module Bpmn
   module Graph
     class BaseElement
-      attr_reader :representation, :ref_id, :name
+      attr_reader :representation, :ref_id
 
-      def initialize(ref_id: nil, representation: nil, name: nil, **options)
+      def initialize(ref_id: nil, **options)
         @ref_id = ref_id
-        @representation = representation
-        @name = name
-      end
-
-      def create_representation(**representation_options)
-        @representation = Representation.new(representation_options)
+        @representation = Representation.new({ name: options[:name], position: options[:position] })
       end
     end
   end
