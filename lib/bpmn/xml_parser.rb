@@ -64,7 +64,8 @@ module Bpmn
     def parse_bpmn_diagram(node, data)
       match_data = data[:attrs][:documentation].match(/imageableWidth=(?<width>#{PATTERNS[:float]});imageableHeight=(?<height>#{PATTERNS[:float]})/)
       position = if match_data
-                   { width: match_data[:width].to_f, height: match_data[:height].to_f }
+                   # orientation = 0 => horizontal.
+                   { width: match_data[:height].to_f, height: match_data[:width].to_f }
                  else
                    { width: 100, height: 100 }
                  end
