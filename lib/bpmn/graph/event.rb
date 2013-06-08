@@ -6,7 +6,7 @@ module Bpmn
       attr_accessor :type
 
       def initialize(type: :none, **options)
-        raise ArgumentError "undefined event type" unless TYPES.include?(type)
+        raise ArgumentError, "undefined event type" unless TYPES.include?(type)
 
         super(**options)
         @type = type

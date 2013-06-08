@@ -6,7 +6,7 @@ module Bpmn
       attr_accessor :type
 
       def initialize(type: :exclusive_data, **options)
-        raise ArgumentError "undefined gateway type" unless TYPES.include?(type)
+        raise ArgumentError, "undefined gateway type" unless TYPES.include?(type)
 
         super(options)
         @type = type

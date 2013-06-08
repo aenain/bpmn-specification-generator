@@ -1,6 +1,8 @@
 module Bpmn
   module Graph
     class Node < BaseElement
+      attr_reader :connections, :back_connections
+
       def initialize(connections: [], back_connections: [], **options)
         super(**options)
         @connections = connections
@@ -15,22 +17,20 @@ module Bpmn
         connection
       end
 
+      def forward_nodes
+        connections.map(&:end_node)
+      end
+
+      def back_nodes
+        back_connections.map(&:start_node)
+      end
+
       def inspect
         "Node##{ref_id}"
       end
 
       %i(connection back_connection).each do |connection|
         class_eval <<-RUBY, __FILE__, __LINE__ + 1
-          def #{connection}s                            # def connections
-            if !@#{connection}s.empty?                  #   if !@connections.empty?
-              @#{connection}s                           #     @connections
-            elsif parent.respond_to?(:#{connection}s)   #   elsif parent.respond_to?(:connections)
-              parent.#{connection}s                     #     parent.connections
-            else                                        #   else
-              @#{connection}s                           #     @connections
-            end                                         #   end
-          end                                           # end
-
           def add_#{connection}(connection)             # def add_connection(connection)
             @#{connection}s << connection               #   @connections << connection
           end                                           # end

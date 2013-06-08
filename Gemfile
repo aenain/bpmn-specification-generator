@@ -21,4 +21,5 @@ group :development, :test do
   gem 'annotate', '~> 2.5.0'
   gem 'pry-debugger', require: false
   gem 'em-websocket', '~> 0.5.0', require: false
+  gem 'shoulda', '~> 3.4.0'
 end

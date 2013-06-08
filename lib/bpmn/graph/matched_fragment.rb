@@ -17,12 +17,20 @@ module Bpmn
         entry_nodes + inner_nodes + end_nodes
       end
 
+      def add_inner_connections(*connections)
+        @inner_connections.concat connections.flatten
+      end
+
       def add_inner_connection(connection)
         @inner_connections << connection
       end
 
+      def add_inner_nodes(*nodes)
+        @inner_nodes.concat nodes.flatten
+      end
+
       def add_inner_node(node)
-        inner_nodes << node
+        @inner_nodes << node
       end
 
       def inspect

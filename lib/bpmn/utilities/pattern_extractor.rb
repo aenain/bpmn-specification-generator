@@ -18,7 +18,7 @@ module Bpmn
           fragment_matched = false
 
           # FIXME
-          ([:sequence] || ORDER).each do |pattern_name|
+          ([:sequence, :multiple_merge] || ORDER).each do |pattern_name|
             finder = PatternFinder.new(graph, pattern_name)
             finder.run do |fragment|
               fragment_matched = true

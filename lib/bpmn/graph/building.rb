@@ -83,7 +83,7 @@ module Bpmn
       end
 
       def store_element(ref_id, element)
-        raise ArgumentError "ref_id can't be nil!" unless ref_id
+        raise ArgumentError, "ref_id can't be nil!" unless ref_id
 
         case element
         when Bpmn::Graph::Connector then ref_elements[:connectors][ref_id] = element
