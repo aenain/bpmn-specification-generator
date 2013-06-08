@@ -27,4 +27,28 @@ class Test::Unit::TestCase
   def extract_graph(graph)
     Bpmn::Utilities::PatternExtractor.new(graph).extract
   end
+
+  def fill_graph(graph: nil, nodes: [], entry_nodes: [nodes.first], end_nodes: [nodes.last], connection_mapping: {})
+    (graph || Bpmn::Graph::Graph.new).tap do |graph|
+      connect_nodes(nodes, connection_mapping)
+      graph.add_entry_nodes(entry_nodes)
+      graph.add_end_nodes(end_nodes)
+    end
+  end
+
+  def connect_nodes(nodes, mapping)
+    mapping.each_pair do |start_ids, end_ids|
+      start_ids = [start_ids] unless start_ids.respond_to?(:each)
+      end_ids = [end_ids] unless end_ids.respond_to?(:each)
+
+      start_ids.each do |start_id|
+        start_node = nodes[start_id]
+
+        end_ids.each do |end_id|
+          end_node = nodes[end_id]
+          start_node.connect_with(end_node)
+        end
+      end
+    end
+  end
 end
