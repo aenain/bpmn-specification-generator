@@ -1,0 +1,5 @@
+require 'bpmn/utilities/xml_parser'
+require 'bpmn/utilities/pattern_finder'
+require 'bpmn/utilities/pattern_extractor'
+require 'bpmn/utilities/specification_generator'
+require 'bpmn/utilities/visualization_serializer'

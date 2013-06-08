@@ -6,11 +6,11 @@ class Diagram < ActiveRecord::Base
   belongs_to :business_model
 
   def build_graph(raw_xml)
-    self.graph = Bpmn::XmlParser.new(raw_xml).parse
+    self.graph = Bpmn::Utilities::XmlParser.new(raw_xml).parse
   end
 
   def prepare_visualization
-    self.visualization = Bpmn::VisualizationSerializer.new(graph).serialize
+    self.visualization = Bpmn::Utilities::VisualizationSerializer.new(graph).serialize
   end
 end
 

@@ -1,1 +1,1 @@
-bundle exec irb -I lib/ -r './lib/bpmn.rb'
+bundle exec irb -r './app.rb'

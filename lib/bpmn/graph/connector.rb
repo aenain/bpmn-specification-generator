@@ -15,6 +15,10 @@ module Bpmn
         @end_node = end_node
         @type = type
       end
+
+      def inspect
+        "Connector##{ref_id} from:#{start_node.ref_id} to:#{end_node.ref_id} name:#{representation.name}"
+      end
     end
   end
 end

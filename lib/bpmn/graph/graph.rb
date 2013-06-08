@@ -22,6 +22,7 @@ module Bpmn
   module Graph
     class Graph
       include ::Bpmn::Graph::Building
+      include ::Bpmn::Graph::Wrapping
     end
   end
 end

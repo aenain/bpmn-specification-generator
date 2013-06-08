@@ -1,15 +1,28 @@
+# WP1
 module Bpmn
   module Pattern
     class Sequence < Base
-      SPECIFICATION = "seq(:arg, :arg, :arg)" # TODO!
+      DIRECTION = :back
 
-      def build_graph
-        Graph::Graph.new.tap do |graph|
-          activities = 3.times.map { graph.create_node(:activity) }
-          graph.add_entry_node(activities[0])
-          activities[0].connect_with(activities[1])
-          activities[1].connect_with(activities[2])
+      def match(node)
+        connection = node.back_connections.first
+        return unless has_one_back_connection?(node) && has_one_connection?(connection.start_node)
+
+        ::Bpmn::Graph::MatchedFragment.new(pattern_name: :sequence).tap do |fragment|
+          fragment.add_entry_node(connection.start_node)
+          fragment.add_end_node(node)
+          fragment.add_connection(connection)
         end
+      end
+
+      private
+
+      def has_one_connection?(node)
+        node.connections.count == 1
+      end
+
+      def has_one_back_connection?(node)
+        node.back_connections.count == 1
       end
     end
   end

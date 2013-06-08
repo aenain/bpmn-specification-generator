@@ -8,14 +8,18 @@ module Bpmn
       extend ActiveSupport::Concern
 
       included do
-        attr_reader :entry_nodes, :sub_processes, :representation
+        # entry_nodes goes inside.
+        # we assume that every sub_process has only one external entry point and one external way out.
+        attr_reader :entry_nodes, :end_nodes, :sub_processes, :representation, :parent
       end
 
       def initialize(*args)
         super(*args)
         @sub_processes = []
         @entry_nodes = []
+        @end_nodes = []
         @representation = nil
+        @parent = nil
       end
 
       def first_node
@@ -35,15 +39,19 @@ module Bpmn
       end
 
       def add_connector_waypoint(ref_id, waypoint)
-        lookup_element(ref_id).representation.add_waypoint(waypoint)
+        lookup_element(ref_id, type: :connector).representation.add_waypoint(waypoint)
       end
 
       def create_node(type, **node_options)
         klass = "bpmn/graph/#{type}".to_s.camelize.constantize
         klass.new(**node_options).tap do |node|
+          node.parent = self
           store_element(node.ref_id, node)
-          add_entry_node(node) if type == :start_event
-          add_sub_process(node) if type == :sub_process
+          case type
+          when :start_event then add_entry_node(node)
+          when :end_event   then add_end_node(node)
+          when :sub_process then add_sub_process(node)
+          end
         end
       end
 
@@ -54,8 +62,20 @@ module Bpmn
         end
       end
 
+      def add_entry_nodes(*nodes)
+        entry_nodes.concat nodes.flatten
+      end
+
       def add_entry_node(node)
         entry_nodes << node
+      end
+
+      def add_end_nodes(*nodes)
+        end_nodes.concat nodes.flatten
+      end
+
+      def add_end_node(node)
+        end_nodes << node
       end
 
       def add_sub_process(node)
@@ -64,15 +84,19 @@ module Bpmn
 
       def store_element(ref_id, element)
         raise ArgumentError "ref_id can't be nil!" unless ref_id
-        ref_elements[ref_id] = element
+
+        case element
+        when Bpmn::Graph::Connector then ref_elements[:connectors][ref_id] = element
+        else ref_elements[:nodes][ref_id] = element
+        end
       end
 
-      def lookup_elements(*ref_ids)
-        ref_ids.flatten.map { |id| lookup_element(id) }
+      def lookup_elements(*ref_ids, type: :all)
+        ref_ids.flatten.map { |id| lookup_element(id, type: type) }
       end
 
-      def lookup_element(ref_id)
-        element = ref_elements[ref_id]
+      def lookup_element(ref_id, type: :all)
+        element = ref_elements_by_type(type)[ref_id]
 
         unless element
           sub_processes.each do |process|
@@ -84,18 +108,31 @@ module Bpmn
         element
       end
 
-      def get_elements(nested: false)
-        ref_elements.values.tap do |elements|
+      def get_elements(nested: false, type: :all)
+        elements = ref_elements_by_type(type)
+
+        elements.values.tap do |elements|
           sub_processes.each do |process|
-            elements.concat process.get_elements(nested: nested)
+            elements.concat process.get_elements(nested: nested, type: type)
           end if nested
+        end
+      end
+
+      def ref_elements_by_type(type)
+        case type
+        when :all       then ref_elements[:nodes].merge(ref_elements[:connectors])
+        when :node      then ref_elements[:nodes]
+        when :connector then ref_elements[:connectors]
         end
       end
 
       private 
 
       def ref_elements
-        @ref_elements ||= {}
+        @ref_elements ||= {
+          nodes: {},
+          connectors: {}
+        }
       end
     end
   end

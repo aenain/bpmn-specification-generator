@@ -1,4 +1,5 @@
 require 'bpmn/graph/building'
+require 'bpmn/graph/wrapping'
 require 'bpmn/graph/base_element'
 require 'bpmn/graph/node'
 require 'bpmn/graph/connector'
