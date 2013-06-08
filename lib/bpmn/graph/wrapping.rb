@@ -26,6 +26,7 @@ module Bpmn
           end
 
           clasp_parent_aside_node(node, :entry)
+          self.parent ||= node.parent
           node.parent = self
         end
       end
@@ -45,6 +46,7 @@ module Bpmn
           end
 
           clasp_parent_aside_node(node, :end)
+          self.parent ||= node.parent
           node.parent = self
         end
       end

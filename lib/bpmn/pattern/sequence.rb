@@ -11,7 +11,7 @@ module Bpmn
         ::Bpmn::Graph::MatchedFragment.new(pattern_name: :sequence).tap do |fragment|
           fragment.add_entry_node(connection.start_node)
           fragment.add_end_node(node)
-          fragment.add_connection(connection)
+          fragment.add_inner_connection(connection)
         end
       end
 

@@ -18,20 +18,30 @@ module Bpmn
 
         until pending_queue.empty?
           node = pending_queue.shift
-          visited_nodes.add(node)
+          unless visited_nodes.include?(node)
+            visited_nodes.add(node)
 
-          matched_fragment = ::Bpmn::Pattern::Base.match(node, pattern_name)
-          yield matched_fragment if matched_fragment
+            matched_fragment = ::Bpmn::Pattern::Base.match(node, pattern_name)
+            yield matched_fragment if matched_fragment
 
-          connections_method.bind(matched_fragment || node).call.map do |connection|
-            connected_node = node_method.bind(connection).call
-            pending_queue.push(connected_node) unless visited_nodes.include?(connected_node)
+            connections_method.bind(matched_fragment || node).call.map do |connection|
+              connected_node = node_method.bind(connection).call
+              pending_queue.push(connected_node) unless visited_nodes.include?(connected_node)
+            end
           end
         end
       end
 
       def node_changed(node)
         pending_queue.push(node)
+      end
+
+      def mark_nodes_as_visited(*nodes)
+        nodes.flatten.each { |n| mark_node_as_visited(n) }
+      end
+
+      def mark_node_as_visited(node)
+        visited_nodes.add(node)
       end
 
       private

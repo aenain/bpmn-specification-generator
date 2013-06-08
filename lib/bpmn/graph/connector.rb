@@ -17,7 +17,7 @@ module Bpmn
       end
 
       def inspect
-        "Connector##{ref_id} from:#{start_node.ref_id} to:#{end_node.ref_id} name:#{representation.name}"
+        "Connector##{ref_id} from:#{start_node.inspect} to:#{end_node.inspect}"
       end
     end
   end

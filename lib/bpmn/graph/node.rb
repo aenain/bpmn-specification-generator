@@ -15,6 +15,10 @@ module Bpmn
         connection
       end
 
+      def inspect
+        "Node##{ref_id}"
+      end
+
       %i(connection back_connection).each do |connection|
         class_eval <<-RUBY, __FILE__, __LINE__ + 1
           def #{connection}s                            # def connections
