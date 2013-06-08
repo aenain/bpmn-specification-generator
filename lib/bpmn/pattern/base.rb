@@ -1,29 +1,5 @@
 require 'singleton'
 
-# module Bpmn
-#   module Pattern
-#     class Base
-#       SPECIFICATION = ""
-
-#       attr_accessor :specification, :node_to_match, :entry_nodes, :end_nodes, :connections
-
-#       def initialize(node_to_match)
-#         @node_to_match = node_to_match
-#         @specification = SPECIFICATION
-
-#         @entry_nodes = []
-#         @end_nodes = []
-#         @connections = []
-#       end
-
-#       # true or false
-#       def match?
-#         false
-#       end
-#     end
-#   end
-# end
-
 module Bpmn
   module Pattern
     class Base
