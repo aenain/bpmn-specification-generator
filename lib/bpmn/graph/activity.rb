@@ -1,6 +1,6 @@
 module Bpmn
   module Graph
-    class Activity < Node
+    class Activity < Task
       attr_accessor :boundary_events
     end
   end

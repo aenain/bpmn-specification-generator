@@ -33,7 +33,9 @@ module Bpmn
 
       def clasp_inner_nodes
         inner_nodes.each do |node|
+          node.parent.remove_inner_node(node) if node.parent.respond_to?(:remove_inner_node)
           node.parent = self
+          add_inner_node(node)
         end if respond_to?(:inner_nodes)
       end
 

@@ -23,7 +23,7 @@ class Test::Unit::TestCase
     assert node_2.back_nodes.include?(node_1), "Node expected to be in back_nodes."
   end
 
-  # Example structures:
+  # Example structures (notice that root element is always a pattern's name):
   # {
   #   :sequence => [
   #     :task,
@@ -43,7 +43,7 @@ class Test::Unit::TestCase
   # }
   def assert_node_structure(fragment, structure)
     # go directly to the matched fragment's nodes
-    fragment = fragment.entry_nodes.first if fragment.kind_of?(Bpmn::Graph::Graph)
+    fragment = fragment.entry_nodes.first if fragment.respond_to?(:entry_nodes) && !fragment.kind_of?(Bpmn::Graph::MatchedFragment)
 
     pattern_name = structure.keys.first
     structure = structure.values.first

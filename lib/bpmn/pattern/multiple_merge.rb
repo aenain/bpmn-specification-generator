@@ -10,8 +10,8 @@ module Bpmn
         return unless node_a.connections.count == 2
 
         node_b, node_c = node_a.connections.map(&:end_node)
-        return unless has_connections?(node_b, count: 1) &&
-                      has_connections?(node_c, count: 1) &&
+        return unless has_connections?(node_b, count: 1, conditions: { kind: %i(activity task matched_fragment) }) &&
+                      has_connections?(node_c, count: 1, conditions: { kind: %i(activity task matched_fragment) }) &&
                       node_b.forward_nodes == node_c.forward_nodes
 
         node_d = node_b.forward_nodes.first

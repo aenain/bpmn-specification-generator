@@ -26,7 +26,7 @@ module Bpmn
       end
 
       def inspect
-        "Node##{ref_id}"
+        "#{self.class.name}##{ref_id}"
       end
 
       %i(connection back_connection).each do |connection|

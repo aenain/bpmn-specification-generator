@@ -26,7 +26,7 @@ module Bpmn
               fragment_matched = true
               fragment.wrap
 
-              finder.mark_nodes_as_visited(fragment.nodes)
+              finder.mark_visited(fragment.nodes)
               finder.node_changed(fragment)
             end
           end

@@ -1,18 +1,37 @@
 module Bpmn
   module Utilities
     class PatternFinder
-      attr_reader :graph, :pattern_name, :pending_queue, :visited_nodes
+      attr_reader :graph, :pattern_name, :pending_queue, :visited_nodes, :nested_processes
 
       def initialize(graph, pattern_name)
-        @graph          = graph
-        @pattern_name   = pattern_name
-        @pending_queue  = Queue.new
-        @visited_nodes  = Set.new
+        @graph            = graph
+        @pattern_name     = pattern_name
+        @pending_queue    = Queue.new
+        @visited_nodes    = Set.new
+        @nested_processes = Hash.new
       end
 
       # matched fragments will be passed to a block
-      def run
-        start_nodes.each do |node|
+      def run(&block)
+        most_nested_processes.each do |process|
+          find_in(process, &block)
+        end
+
+        find_in(graph, &block)
+      end
+
+      def node_changed(node)
+        pending_queue.push(node)
+      end
+
+      def mark_visited(*nodes)
+        nodes.flatten.each { |n| visited_nodes.add(n) }
+      end
+
+      private
+
+      def find_in(graph_or_process, &block)
+        start_nodes(graph_or_process).each do |node|
           pending_queue.push(node)
         end
 
@@ -22,7 +41,7 @@ module Bpmn
             visited_nodes.add(node)
 
             matched_fragment = ::Bpmn::Pattern::Base.match(node, pattern_name)
-            yield matched_fragment if matched_fragment && block_given?
+            block.call(matched_fragment) if matched_fragment
 
             connections_method.bind(matched_fragment || node).call.map do |connection|
               connected_node = node_method.bind(connection).call
@@ -32,19 +51,18 @@ module Bpmn
         end
       end
 
-      def node_changed(node)
-        pending_queue.push(node)
+      def most_nested_processes
+        find_nested_processes.sort.reverse.flat_map { |_, ps| ps }
       end
 
-      def mark_nodes_as_visited(*nodes)
-        nodes.flatten.each { |n| mark_node_as_visited(n) }
-      end
+      def find_nested_processes(graph_or_process = @graph, nesting_level = 0)
+        graph_or_process.sub_processes.each do |sub_process|
+          (@nested_processes[nesting_level] ||= []) << sub_process
+          find_nested_processes(sub_process, nesting_level + 1)
+        end
 
-      def mark_node_as_visited(node)
-        visited_nodes.add(node)
+        @nested_processes
       end
-
-      private
 
       def connections_method
         return @connections_method if @connections_method
@@ -58,9 +76,8 @@ module Bpmn
         @node_method = ::Bpmn::Graph::Connector.instance_method(method_name)
       end
 
-      def start_nodes
-        return @start_nodes if @start_nodes
-        @start_nodes = find_back? ? graph.end_nodes : graph.entry_nodes
+      def start_nodes(graph_or_process)
+        find_back? ? graph_or_process.end_nodes : graph_or_process.entry_nodes
       end
 
       def find_back?

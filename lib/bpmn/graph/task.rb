@@ -1,6 +1,6 @@
 module Bpmn
   module Graph
-    class Task < Activity
+    class Task < Node
     end
   end
 end
