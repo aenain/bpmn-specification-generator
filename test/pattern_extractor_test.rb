@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class ExtractorTest < Test::Unit::TestCase
+class PatternExtractorTest < Test::Unit::TestCase
   should "extract sequence in: A -> B" do
     graph = Bpmn::Graph::Graph.new
     nodes = 2.times.map { graph.create_node(:task, ref_id: rand(100)) }
@@ -124,7 +124,7 @@ class ExtractorTest < Test::Unit::TestCase
     assert_end_nodes(graph.end_nodes.first, sub_process)
   end
 
-  should "extract sequences in sub processes and then parallel split in: A -> {B: [C -> D, E -> F]}" do
+  should "extract sequences in sub process and then parallel split in: A -> {B: [C -> D, E -> F]}" do
     graph = Bpmn::Graph::Graph.new
     node_a = graph.create_node(:task, ref_id: rand(100))
     sub_process = graph.create_node(:sub_process, ref_id: rand(100))
