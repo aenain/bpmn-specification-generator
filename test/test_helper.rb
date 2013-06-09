@@ -1,6 +1,7 @@
 require './app.rb'
 require 'shoulda'
 require 'minitest/autorun'
+require 'active_support/inflector'
 
 class Test::Unit::TestCase
   def assert_full_match(graph)
@@ -20,8 +21,79 @@ class Test::Unit::TestCase
   end
 
   def assert_connected(node_1, node_2)
-    assert node_1.forward_nodes.include?(node_2)
-    assert node_2.back_nodes.include?(node_1)
+    assert node_1.forward_nodes.include?(node_2), "Node expected to be in forward_nodes."
+    assert node_2.back_nodes.include?(node_1), "Node expected to be in back_nodes."
+  end
+
+  # Example structures:
+  # {
+  #   :sequence => [
+  #     :task,
+  #     { :sequence => [:task, :task] }
+  #   ]
+  # }
+  #
+  # {
+  #   :multi_merge => [
+  #     :task,
+  #     [
+  #       { :sequence => [:task, :task] },
+  #       { :sequence => [:task, :task] }
+  #     ],
+  #     :task
+  #   ]
+  # }
+  def assert_node_structure(fragment, structure)
+    # go directly to the matched fragment's nodes
+    fragment = fragment.entry_nodes.first if fragment.kind_of?(Bpmn::Graph::Graph)
+
+    pattern_name = structure.keys.first
+    structure = structure.values.first
+    nodes = fragment.entry_nodes
+
+    assert_equal pattern_name, fragment.pattern_name
+
+    structure.each_with_index do |structure_or_type, index|
+      nodes = nodes.map(&:forward_nodes).flatten.uniq if index > 0
+
+      expected_forward_nodes_count = if index < structure.count - 1
+                                       structure[index + 1].respond_to?(:count) ? structure[index + 1].count : 1
+                                     else
+                                       0
+                                     end
+
+      nodes.each do |node|
+        assert_forward_node_count(node, expected_forward_nodes_count)
+      end
+
+      if structure_or_type.kind_of?(Array)
+        structure_or_type.each_with_index do |nested_structure_or_type, nested_index|
+          node = nodes[nested_index]
+
+          if nested_structure_or_type.kind_of?(Hash)
+            assert_node_structure(node, nested_structure_or_type)
+          else
+            assert_node_type(node, nested_structure_or_type)
+          end
+        end
+      elsif structure_or_type.kind_of?(Hash)
+        assert_node_structure(nodes.first, structure_or_type)
+      else
+        nodes.each do |node|
+          assert_node_type(node, structure_or_type)
+        end
+      end
+    end
+  end
+
+  def assert_forward_node_count(node, count)
+    actual_count = node.forward_nodes.count
+    assert_equal count, actual_count, "Node expected to have #{count} forward nodes but has #{actual_count}"
+  end
+
+  def assert_node_type(node, type)
+    node_type = node.class.name.demodulize.underscore.to_sym
+    assert_equal type, node_type, "Node expected to be of type #{type} but was #{node_type}"
   end
 
   def extract_graph(graph)

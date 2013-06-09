@@ -9,6 +9,7 @@ class ExtractorTest < Test::Unit::TestCase
     extract_graph(graph)
 
     assert_full_match(graph)
+    assert_node_structure(graph, sequence: [:task, :task])
     assert_entry_nodes(graph, nodes.first)
     assert_end_nodes(graph, nodes.last)
     assert_connected(nodes.first, nodes.last)
@@ -22,6 +23,7 @@ class ExtractorTest < Test::Unit::TestCase
     extract_graph(graph)
 
     assert_full_match(graph)
+    assert_node_structure(graph, sequence: [:task, { sequence: [:task, :task] } ])
     assert_entry_nodes(graph, nodes.first)
     assert_equal [nodes.last], graph.end_nodes.first.end_nodes.first.end_nodes
 
@@ -38,13 +40,9 @@ class ExtractorTest < Test::Unit::TestCase
     extract_graph(graph)
 
     assert_full_match(graph)
+    assert_node_structure(graph, multiple_merge: [:task, [:task, :task], :task])
     assert_entry_nodes(graph, nodes.first)
     assert_end_nodes(graph, nodes.last)
-
-    assert_connected(nodes[0], nodes[1])
-    assert_connected(nodes[0], nodes[2])
-    assert_connected(nodes[1], nodes[3])
-    assert_connected(nodes[2], nodes[3])
   end
 
   should "extract sequence and then multiple merge in: A -> [B -> C, D -> E] -> F" do
@@ -55,10 +53,8 @@ class ExtractorTest < Test::Unit::TestCase
     extract_graph(graph)
 
     assert_full_match(graph)
+    assert_node_structure(graph, multiple_merge: [:task, [{ sequence: [:task, :task] }, { sequence: [:task, :task] }], :task])
     assert_entry_nodes(graph, nodes.first)
     assert_end_nodes(graph, nodes.last)
-
-    assert_connected(nodes[1], nodes[3])
-    assert_connected(nodes[2], nodes[4])
   end
 end
