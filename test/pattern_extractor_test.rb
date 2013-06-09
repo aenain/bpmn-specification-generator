@@ -9,7 +9,7 @@ class ExtractorTest < Test::Unit::TestCase
     extract_graph(graph)
 
     assert_full_match(graph)
-    assert_node_structure(graph, sequence: [:task, :task])
+    assert_pattern_structure(graph, sequence: [:task, :task])
     assert_entry_nodes(graph.entry_nodes.first, nodes.first)
     assert_end_nodes(graph.end_nodes.first, nodes.last)
     assert_connected(nodes.first, nodes.last)
@@ -23,7 +23,7 @@ class ExtractorTest < Test::Unit::TestCase
     extract_graph(graph)
 
     assert_full_match(graph)
-    assert_node_structure(graph, sequence: [:task, { sequence: [:task, :task] } ])
+    assert_pattern_structure(graph, sequence: [:task, { sequence: [:task, :task] } ])
     assert_entry_nodes(graph.entry_nodes.first, nodes.first)
     assert_end_nodes(graph.end_nodes.first.end_nodes.first, nodes.last)
 
@@ -40,7 +40,7 @@ class ExtractorTest < Test::Unit::TestCase
     extract_graph(graph)
 
     assert_full_match(graph)
-    assert_node_structure(graph, multiple_merge: [:task, [:task, :task], :task])
+    assert_pattern_structure(graph, multiple_merge: [:task, [:task, :task], :task])
     assert_entry_nodes(graph.entry_nodes.first, nodes.first)
     assert_end_nodes(graph.end_nodes.first, nodes.last)
   end
@@ -53,7 +53,7 @@ class ExtractorTest < Test::Unit::TestCase
     extract_graph(graph)
 
     assert_full_match(graph)
-    assert_node_structure(graph, multiple_merge: [:task, [{ sequence: [:task, :task] }, { sequence: [:task, :task] }], :task])
+    assert_pattern_structure(graph, multiple_merge: [:task, [{ sequence: [:task, :task] }, { sequence: [:task, :task] }], :task])
     assert_entry_nodes(graph.entry_nodes.first, nodes.first)
     assert_end_nodes(graph.end_nodes.first, nodes.last)
   end
@@ -66,7 +66,7 @@ class ExtractorTest < Test::Unit::TestCase
     extract_graph(graph)
 
     assert_full_match(graph)
-    assert_node_structure(graph, parallel_split: [:task, [:task, :task]])
+    assert_pattern_structure(graph, parallel_split: [:task, [:task, :task]])
     assert_entry_nodes(graph.entry_nodes.first, nodes.first)
     assert_end_nodes(graph.end_nodes.first, nodes[-2..-1])
   end
@@ -79,7 +79,7 @@ class ExtractorTest < Test::Unit::TestCase
 
     extract_graph(sub_process)
     assert_full_match(sub_process)
-    assert_node_structure(sub_process, sequence: [:task, :task])
+    assert_pattern_structure(sub_process, sequence: [:task, :task])
   end
 
   should "extract both sequences in: {A: [B -> C, D -> E]}" do
@@ -119,7 +119,7 @@ class ExtractorTest < Test::Unit::TestCase
     extract_graph(graph)
 
     assert_full_match(graph)
-    assert_node_structure(graph, parallel_split: [:task, :sub_process])
+    assert_pattern_structure(graph, parallel_split: [:task, :sub_process])
     assert_entry_nodes(graph.entry_nodes.first, node_a)
     assert_end_nodes(graph.end_nodes.first, sub_process)
   end
@@ -141,9 +141,9 @@ class ExtractorTest < Test::Unit::TestCase
     extract_graph(graph)
 
     assert_full_match(graph)
-    assert_node_structure(sub_process.entry_nodes[0], sequence: [:task, :task])
-    assert_node_structure(sub_process.entry_nodes[1], sequence: [:task, :task])
-    assert_node_structure(graph, parallel_split: [:task, :sub_process])
+    assert_pattern_structure(sub_process.entry_nodes[0], sequence: [:task, :task])
+    assert_pattern_structure(sub_process.entry_nodes[1], sequence: [:task, :task])
+    assert_pattern_structure(graph, parallel_split: [:task, :sub_process])
     assert_entry_nodes(graph.entry_nodes.first, node_a)
     assert_end_nodes(graph.end_nodes.first, sub_process)
   end
@@ -156,7 +156,7 @@ class ExtractorTest < Test::Unit::TestCase
     extract_graph(graph)
 
     assert_full_match(graph)
-    assert_node_structure(graph, parallel_split: [:task, [{ sequence: [:task, :task] }, { sequence: [:task, :task] }]])
+    assert_pattern_structure(graph, parallel_split: [:task, [{ sequence: [:task, :task] }, { sequence: [:task, :task] }]])
     assert_entry_nodes(graph.entry_nodes.first, nodes.first)
     assert_end_nodes(graph.end_nodes[0].end_nodes[0], nodes[-2])
     assert_end_nodes(graph.end_nodes[0].end_nodes[1], nodes[-1])

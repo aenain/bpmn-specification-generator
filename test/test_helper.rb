@@ -41,7 +41,7 @@ class Test::Unit::TestCase
   #     :task
   #   ]
   # }
-  def assert_node_structure(fragment, structure)
+  def assert_pattern_structure(fragment, structure)
     # go directly to the matched fragment's nodes
     fragment = fragment.entry_nodes.first if fragment.respond_to?(:entry_nodes) && !fragment.kind_of?(Bpmn::Graph::MatchedFragment)
 
