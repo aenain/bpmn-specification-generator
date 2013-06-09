@@ -13,12 +13,14 @@ module Bpmn
 
       def extract
         fragment_matched = true
+        considered_patterns = %i(sequence multiple_merge)
 
         while fragment_matched
           fragment_matched = false
 
-          # FIXME
-          ([:sequence, :multiple_merge] || ORDER).each do |pattern_name|
+          ORDER.each do |pattern_name|
+            next unless considered_patterns.include?(pattern_name)
+
             finder = PatternFinder.new(graph, pattern_name)
             finder.run do |fragment|
               fragment_matched = true

@@ -10,11 +10,11 @@ module Bpmn
         return unless node_a.connections.count == 2
 
         node_b, node_c = node_a.connections.map(&:end_node)
-        return unless node_b.connections.count == 1 &&
-                      node_c.connections.count == 1 &&
-                      node_b.connections.first.end_node == node_c.connections.first.end_node
+        return unless has_connections?(node_b, count: 1) &&
+                      has_connections?(node_c, count: 1) &&
+                      node_b.forward_nodes == node_c.forward_nodes
 
-        node_d = node_b.connections.first.end_node
+        node_d = node_b.forward_nodes.first
 
         ::Bpmn::Graph::MatchedFragment.new(pattern_name: :multiple_merge).tap do |fragment|
           fragment.add_entry_node(node_a)

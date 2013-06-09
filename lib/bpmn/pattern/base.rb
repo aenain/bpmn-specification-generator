@@ -20,7 +20,16 @@ module Bpmn
 
       # nil or MatchedFragment
       def match(node)
+      end
 
+      private
+
+      def has_connections?(node, count: 1)
+        node.connections.count == count
+      end
+
+      def has_back_connections?(node, count: 1)
+        node.back_connections.count == count
       end
     end
   end
