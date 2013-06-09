@@ -34,7 +34,7 @@ module Bpmn
       end
 
       def inspect
-        "MatchedFragment entry_nodes:[#{entry_nodes.map(&:inspect).join(',')}] end_nodes:[#{end_nodes.map(&:inspect).join(',')}]"
+        "MatchedFragment entry_nodes:[#{entry_nodes.map(&:inspect).join(',')}] end_nodes:[#{end_nodes.map(&:inspect).join(',')}] pattern:#{pattern_name}"
       end
     end
   end

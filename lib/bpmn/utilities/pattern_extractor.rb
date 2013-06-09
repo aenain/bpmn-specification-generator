@@ -13,7 +13,7 @@ module Bpmn
 
       def extract
         fragment_matched = true
-        considered_patterns = %i(sequence multiple_merge)
+        considered_patterns = %i(sequence multiple_merge parallel_split)
 
         while fragment_matched
           fragment_matched = false

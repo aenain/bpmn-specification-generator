@@ -10,14 +10,12 @@ class Test::Unit::TestCase
     assert_equal Bpmn::Graph::MatchedFragment, graph.entry_nodes.first.class
   end
 
-  def assert_entry_nodes(graph, *nodes)
-    whole_match = graph.entry_nodes.first
-    assert_equal nodes.flatten, whole_match.entry_nodes
+  def assert_entry_nodes(fragment, *nodes)
+    assert_equal nodes.flatten, fragment.entry_nodes
   end
 
-  def assert_end_nodes(graph, *nodes)
-    whole_match = graph.entry_nodes.first
-    assert_equal nodes.flatten, whole_match.end_nodes
+  def assert_end_nodes(fragment, *nodes)
+    assert_equal nodes.flatten, fragment.end_nodes
   end
 
   def assert_connected(node_1, node_2)

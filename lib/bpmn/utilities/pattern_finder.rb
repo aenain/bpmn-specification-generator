@@ -22,7 +22,7 @@ module Bpmn
             visited_nodes.add(node)
 
             matched_fragment = ::Bpmn::Pattern::Base.match(node, pattern_name)
-            yield matched_fragment if matched_fragment
+            yield matched_fragment if matched_fragment && block_given?
 
             connections_method.bind(matched_fragment || node).call.map do |connection|
               connected_node = node_method.bind(connection).call
