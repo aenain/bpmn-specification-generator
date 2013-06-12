@@ -69,13 +69,13 @@ class Test::Unit::TestCase
           node = nodes[nested_index]
 
           if nested_structure_or_type.kind_of?(Hash)
-            assert_node_structure(node, nested_structure_or_type)
+            assert_pattern_structure(node, nested_structure_or_type)
           else
             assert_node_type(node, nested_structure_or_type)
           end
         end
       elsif structure_or_type.kind_of?(Hash)
-        assert_node_structure(nodes.first, structure_or_type)
+        assert_pattern_structure(nodes.first, structure_or_type)
       else
         nodes.each do |node|
           assert_node_type(node, structure_or_type)
