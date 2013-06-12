@@ -161,4 +161,17 @@ class PatternExtractorTest < Test::Unit::TestCase
     assert_end_nodes(graph.end_nodes[0].end_nodes[0], nodes[-2])
     assert_end_nodes(graph.end_nodes[0].end_nodes[1], nodes[-1])
   end
+
+  should "extract simple merge in: [A, B] -> C" do
+    graph = Bpmn::Graph::Graph.new
+    nodes = 3.times.map { graph.create_node(:task, ref_id: rand(100)) }
+    fill_graph(graph: graph, nodes: nodes, connection_mapping: { [0, 1] => 2 }, entry_nodes: nodes[0..1])
+
+    extract_graph(graph)
+
+    assert_full_match(graph)
+    assert_pattern_structure(graph, simple_merge: [[:task, :task], :task])
+    assert_entry_nodes(graph.entry_nodes.first, nodes[0..1])
+    assert_end_nodes(graph.end_nodes[0], nodes[-1])
+  end
 end

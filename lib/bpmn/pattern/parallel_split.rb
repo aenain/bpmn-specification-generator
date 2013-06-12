@@ -12,7 +12,8 @@ module Bpmn
 
       def match_version_1(node)
         node_a = node
-        return unless has_connections?(node_a, count: 1, conditions: { kind: [:sub_process] })
+        return unless pass_conditions?(node_a, kind: %i(matched_fragment activity task)) &&
+                      has_connections?(node_a, count: 1, conditions: { kind: [:sub_process] })
 
         connection = node_a.connections.first
         sub_process = connection.end_node
