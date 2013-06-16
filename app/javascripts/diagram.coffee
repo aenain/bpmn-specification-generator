@@ -155,6 +155,23 @@ class Diagram.Path
   constructor: (@waypoints) ->
     @style = Diagram.Path.STYLES
 
+  getBoundaries: ->
+    return @boundaries if @boundaries?
+
+    @boundaries =
+      top: @waypoints[0].top
+      left: @waypoints[0].left
+      right: @waypoints[0].left
+      bottom: @waypoints[0].top
+
+    for waypoint in @waypoints
+      @boundaries.top = waypoint.top if waypoint.top < @boundaries.top
+      @boundaries.left = waypoint.left if waypoint.left < @boundaries.left
+      @boundaries.bottom = waypoint.top if waypoint.top > @boundaries.bottom
+      @boundaries.right = waypoint.left if waypoint.left > @boundaries.right
+
+    @boundaries
+
 class Diagram.InfoManager
   constructor: (@element) ->
     # nothing for now.
@@ -188,11 +205,14 @@ class Diagram.FragmentHover
   bindToCanvas: (canvas, callback) ->
     canvas.addEventListener 'mousemove', (event) =>
       position = @positionInside(event, canvas)
+      hovered = null
 
       for fragment in @fragments
         if @isHovered(fragment, position)
-          callback(fragment)
+          hovered = fragment
           break
+
+      callback(hovered)
 
   positionInside: (mouseEvent, domElement) ->
     rectangle = domElement.getBoundingClientRect()
@@ -238,8 +258,14 @@ class Diagram.Model
   createInfoManager: ->
     @info = new Diagram.InfoManager(@infoElement)
 
+  #
+  # @param fragment Object(label) | null - null is passed when there is no hovered fragments
+  #
   onFragmentHover: (fragment) ->
-    @info.update(fragment.label)
+    if fragment?
+      @info.update(fragment.label)
+    else
+      @info.update("")
 
   drawNodes: ->
     for node in @data.nodes
@@ -254,7 +280,7 @@ class Diagram.Model
   drawConnectors: ->
     for connector in @data.connectors
       switch connector.type
-        when 'sequence_flow'  then @drawer.drawConnector(connector.waypoints, connector.label)
+        when 'sequence_flow'  then @drawer.drawConnector(connector.waypoints, connector.label || "")
 
 class Diagram.Drawer
   constructor: (@canvas) ->
@@ -367,9 +393,11 @@ class Diagram.Drawer
   #
   drawConnector: (waypoints, text) ->
     path = new Diagram.Path(waypoints)
-    # label = new Diagram.Label(text, @font)
+    label = new Diagram.Label(text, @font)
+    label.setMeasurer(@measurer)
+    label.placeInside(path.getBoundaries())
     @drawPath(path)
-    # @drawLabel(label)
+    @drawLabel(label)
 
   #
   # @param shape Diagram.Shape

@@ -74,6 +74,9 @@ module Bpmn
         end
       end
 
+      # TODO!
+      # Handle conditions within connectors:
+      # <conditionExpression><![CDATA[condition]]></conditionExpression>
       def parse_connector(node, data)
         type = data.delete(:type)
         create_connector(type, data[:attrs])
@@ -185,6 +188,7 @@ module Bpmn
       def create_connector(type, attrs)
         parent.create_connector({
           ref_id: attrs[:id],
+          name: attrs[:name],
           start_ref_id: attrs[:source_ref],
           end_ref_id: attrs[:target_ref],
           type: type
