@@ -18,6 +18,11 @@ module Bpmn
           element.kind_of?(::Bpmn::Graph::Node)
         end
 
+        # matched fragments go first
+        @nodes = @nodes.partition do |node|
+          node.kind_of?(::Bpmn::Graph::MatchedFragment)
+        end.flatten(1)
+
         @json = with_builder do
           serialize_canvas
           serialize_nodes

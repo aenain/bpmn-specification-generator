@@ -55,8 +55,13 @@ class App < Sinatra::Base
     @model = BusinessModel.new
     @model.description = params[:business_model][:description]
     @model.raw_xml = params[:business_model][:raw_xml][:tempfile].read
+
     diagram = @model.build_diagram
     diagram.build_graph(@model.raw_xml)
+    diagram.prepare_visualization
+
+    diagram = @model.build_diagram_with_patterns(graph: diagram.graph)
+    diagram.extract_patterns
     diagram.prepare_visualization
 
     if @model.save
@@ -69,7 +74,8 @@ class App < Sinatra::Base
 
   get '/models/:id' do
     @model = BusinessModel.find(params[:id])
-    gon.visualization_data = JSON.parse(@model.diagram.visualization)
+    diagram = @model.diagram_with_patterns || @model.diagram
+    gon.visualization_data = JSON.parse(diagram.visualization)
     haml 'models/show'.to_sym
   end
 

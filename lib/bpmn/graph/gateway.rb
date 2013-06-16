@@ -1,6 +1,6 @@
 module Bpmn
   module Graph
-    class Gateway < BaseElement
+    class Gateway < Node
       TYPES = %i(exclusive_data exclusive_event inclusive complex parallel)
 
       attr_accessor :type

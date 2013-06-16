@@ -34,6 +34,24 @@ class Diagram.Shape
       stroke:
         width: 2
         color: 'black'
+    matched_fragment:
+      fill:
+        color: 'rgba(0, 0, 0, 0.02)'
+      stroke:
+        width: 0
+        color: 'white'
+    sub_process:
+      fill:
+        color: '#eee'
+      stroke:
+        width: 2
+        color: '#000'
+    gateway:
+      fill:
+        color: 'pink'
+      stroke:
+        width: 2
+        color: '#000'
 
   constructor: (@box, @type) ->
     @style = Diagram.Shape.STYLES[@type]
@@ -49,6 +67,9 @@ class Diagram.Shape
       right: @box.left + @box.width
       bottom: @box.top + @box.height
     }
+
+  getCenter: ->
+    @center
 
   getSize: ->
     {
@@ -145,9 +166,12 @@ class Diagram.Model
   drawNodes: ->
     for node in @data.nodes
       switch node.class
-        when 'Task'         then @drawer.drawActivity(node.position, node.label)
-        when 'StartEvent'   then @drawer.drawStartEvent(node.position, node.label)
-        when 'EndEvent'     then @drawer.drawEndEvent(node.position, node.label)
+        when 'Task'             then @drawer.drawActivity(node.position, node.label)
+        when 'StartEvent'       then @drawer.drawStartEvent(node.position, node.label)
+        when 'EndEvent'         then @drawer.drawEndEvent(node.position, node.label)
+        when 'Gateway'          then @drawer.drawGateway(node.position, node.label)
+        when 'SubProcess'       then @drawer.drawSubProcess(node.position, node.label)
+        when 'MatchedFragment'  then @drawer.drawMatchedFragment(node.position, node.label)
 
   drawConnectors: ->
     for connector in @data.connectors
@@ -204,6 +228,47 @@ class Diagram.Drawer
     @drawLabel(label)
 
   #
+  # @param position Object(top, left, width, height)
+  # @param text String
+  #
+  drawMatchedFragment: (position, text) ->
+    shape = new Diagram.Shape(position, 'matched_fragment')
+    label = new Diagram.Label(text, @font)
+    label.setMeasurer(@measurer)
+    label.placeUnder(shape.getBoundaries())
+
+    @drawRectangle(shape)
+    @drawLabel(label)
+
+  #
+  # @param position Object(top, left, width, height)
+  # @param text String
+  #
+  drawSubProcess: (position, text) ->
+    shape = new Diagram.Shape(position, 'sub_process')
+    label = new Diagram.Label(text, @font)
+    label.setMeasurer(@measurer)
+    # TODO! place under top edge
+    label.placeUnder(shape.getBoundaries())
+
+    @drawRectangle(shape)
+    @drawLabel(label)
+
+  #
+  # @param position Object(top, left, width, height)
+  # @param text String
+  #
+  drawGateway: (position, text) ->
+    shape = new Diagram.Shape(position, 'gateway')
+    label = new Diagram.Label(text, @font)
+    label.setMeasurer(@measurer)
+    label.placeUnder(shape.getBoundaries())
+
+    @drawRuby(shape)
+    @drawLabel(label)
+
+
+  #
   # @param waypoints [Object(top, left)]
   # @param text String
   #
@@ -212,6 +277,23 @@ class Diagram.Drawer
     # label = new Diagram.Label(text, @font)
     @drawPath(path)
     # @drawLabel(label)
+
+  #
+  # @param shape Diagram.Shape
+  # @param callback callback that gets styled context as the only argument
+  #
+  drawRuby: (shape, callback) ->
+    @withOpenPath shape.style, (context) ->
+      bounds = shape.getBoundaries()
+      center = shape.getCenter()
+
+      context.moveTo(center.left, bounds.top)
+      context.lineTo(bounds.right, center.top)
+      context.lineTo(center.left, bounds.bottom)
+      context.lineTo(bounds.left, center.top)
+      context.lineTo(center.left, bounds.top)
+
+      callback(context) if callback?
 
   #
   # @param shape Diagram.Shape

@@ -1,8 +1,8 @@
 module Bpmn
   module Graph
     class BaseElement
-      attr_reader :representation, :ref_id
-      attr_accessor :parent
+      attr_reader :ref_id
+      attr_accessor :representation, :parent
 
       def initialize(ref_id: nil, **options)
         @ref_id = ref_id

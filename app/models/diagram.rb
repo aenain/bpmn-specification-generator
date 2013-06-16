@@ -12,6 +12,10 @@ class Diagram < ActiveRecord::Base
   def prepare_visualization
     self.visualization = Bpmn::Utilities::VisualizationSerializer.new(graph).serialize
   end
+
+  def extract_patterns
+    self.graph = Bpmn::Utilities::PatternExtractor.new(graph).extract
+  end
 end
 
 # == Schema Information
