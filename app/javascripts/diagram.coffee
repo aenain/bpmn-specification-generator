@@ -97,6 +97,10 @@ class Diagram.Label
   setMeasurer: (measurer) ->
     @measurer = measurer
 
+  placeAt: (center) ->
+    @position.top = center.top
+    @position.left = center.left
+
   placeInside: (boundaries) ->
     width = boundaries.right - boundaries.left
     @splitTextToFit(width)
@@ -154,6 +158,19 @@ class Diagram.Path
 
   constructor: (@waypoints) ->
     @style = Diagram.Path.STYLES
+
+  getCenter: ->
+    if @waypoints.count > 2
+      middleIndex = Math.floor(@waypoints.count / 2)
+      center = @waypoints[middleIndex]
+
+      { top: center.top, left: center.left }
+    else
+      boundaries = @getBoundaries()
+      {
+        top: (boundaries.top + boundaries.bottom) / 2
+        left: (boundaries.left + boundaries.right) / 2
+      }
 
   getBoundaries: ->
     return @boundaries if @boundaries?
@@ -395,7 +412,7 @@ class Diagram.Drawer
     path = new Diagram.Path(waypoints)
     label = new Diagram.Label(text, @font)
     label.setMeasurer(@measurer)
-    label.placeInside(path.getBoundaries())
+    label.placeAt(path.getCenter())
     @drawPath(path)
     @drawLabel(label)
 
