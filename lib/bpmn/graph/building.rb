@@ -16,10 +16,8 @@ module Bpmn
       def initialize(*args)
         super(*args)
         @sub_processes = []
-        @entry_nodes = []
-        @end_nodes = []
-        @representation = nil
-        @parent = nil
+        @entry_nodes = Set.new
+        @end_nodes = Set.new
       end
 
       def first_node
@@ -62,20 +60,32 @@ module Bpmn
         end
       end
 
+      def fix_missing_side_nodes
+        get_elements(type: :node).each do |node|
+          node.fix_missing_side_nodes if node.respond_to?(:fix_missing_side_nodes)
+          node.parent.add_entry_node(node) if node.back_connections.empty?
+          node.parent.add_end_node(node) if node.connections.empty?
+        end
+      end
+
       def add_entry_nodes(*nodes)
-        entry_nodes.concat nodes.flatten
+        nodes.flatten.each do |node|
+          add_entry_node(node)
+        end
       end
 
       def add_entry_node(node)
-        entry_nodes << node
+        entry_nodes.add(node)
       end
 
       def add_end_nodes(*nodes)
-        end_nodes.concat nodes.flatten
+        nodes.flatten.each do |node|
+          add_end_node(node)
+        end
       end
 
       def add_end_node(node)
-        end_nodes << node
+        end_nodes.add(node)
       end
 
       def add_sub_process(node)

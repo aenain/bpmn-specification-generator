@@ -3,10 +3,11 @@ require 'active_support/inflector'
 require 'pry-debugger'
 
 # parses xml and builds whole graph structure
-# TODO! when creating nodes for subprocess use create_node method on sub_process instead of graph
 module Bpmn
   module Utilities
     class XmlParser
+      class ParseError < StandardError; end
+
       PATTERNS = {
         float: /[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?/,
         integer: /[-+]?[0-9]+/,
@@ -14,25 +15,30 @@ module Bpmn
       }
 
       ELEMENT_TYPES = {
-        node:       %i(start_event end_event task),
+        node:       %i(start_event end_event task complex_gateway exclusive_gateway parallel_gateway inclusive_gateway),
         event:      %i(start_event end_event),
-        connector:  %i(sequence_flow)
+        connector:  %i(sequence_flow),
+        gateway:    %i(complex_gateway exclusive_gateway parallel_gateway inclusive_gateway)
       }
 
-      attr_reader :raw, :xml, :graph
+      attr_reader :raw, :xml, :graph, :sub_processes
 
       def initialize(raw)
         @raw = raw
+        @sub_processes = []
       end
 
       def parse
         @xml = Nokogiri::XML(raw)
         @graph = Bpmn::Graph::Graph.new
 
-        parse_children(@xml.root) do |child, data|
+        parse_children(xml.root) do |child, data|
           case data[:type]
-          when :process       then parse_process(child, data)
-          when :bpmn_diagram  then parse_bpmn_diagram(child, data)
+          when :process
+            parse_process(child, data)
+            graph.fix_missing_side_nodes
+          when :bpmn_diagram
+            parse_bpmn_diagram(child, data)
           end
         end
 
@@ -44,17 +50,26 @@ module Bpmn
       def parse_process(node, attrs)
         parse_children(node, priority_type: :node) do |child, data|
           case data[:type]
+          when :sub_process                 then parse_sub_process(child, data)
           when *ELEMENT_TYPES[:node]        then parse_node(child, data)
           when *ELEMENT_TYPES[:connector]   then parse_connector(child, data)
           end
         end
       end
 
+      def parse_sub_process(node, data)
+        sub_process = create_sub_process(data[:attrs])
+        @sub_processes.push(sub_process)
+        parse_process(node, data[:attrs])
+        @sub_processes.pop
+      end
+
       def parse_node(node, data)
         type = data.delete(:type)
         case type
-        when *ELEMENT_TYPES[:event]         then create_node(type, data[:attrs]) # diverse it.
-        when *ELEMENT_TYPES[:node]          then create_node(type, data[:attrs])
+        when *ELEMENT_TYPES[:gateway]       then create_gateway(type, data[:attrs])
+        when *ELEMENT_TYPES[:event]         then create_event(type, data[:attrs])
+        else                                     create_node(type, data[:attrs])
         end
       end
 
@@ -72,7 +87,7 @@ module Bpmn
                      { width: 100, height: 100 }
                    end
 
-        @graph.create_representation(position: position, name: data[:attrs][:name])
+        graph.create_representation(position: position, name: data[:attrs][:name])
 
         parse_children(node) do |child, data|
           case data[:type]
@@ -117,7 +132,7 @@ module Bpmn
           width: data[:attrs][:width],
           height: data[:attrs][:height]
         }
-        @graph.change_element_position(data[:attrs][:ref_id], position)
+        parent.change_element_position(data[:attrs][:ref_id], position)
       end
 
       def parse_bpmn_waypoint(node, data)
@@ -125,18 +140,47 @@ module Bpmn
           top: data[:attrs][:y],
           left: data[:attrs][:x]
         }
-        @graph.add_connector_waypoint(data[:attrs][:ref_id], waypoint)
+        parent.add_connector_waypoint(data[:attrs][:ref_id], waypoint)
+      end
+
+      def create_sub_process(attrs)
+        create_node(:sub_process, attrs)
+      end
+
+      def create_gateway(type, attrs)
+        gateway_type = case type
+                       when :complex_gateway
+                         :complex
+                       when :exclusive_gateway
+                         :exclusive_data
+                       when :event_based_gateway
+                         if attrs[:event_gateway_type] == 'exclusive'
+                           :exclusive_event
+                         else
+                           raise ParseError, %q(cannot resolve gateway type)
+                         end
+                       end
+
+        parent.create_node(:gateway, {
+          ref_id: attrs[:id],
+          name: attrs[:name],
+          type: gateway_type
+        })
+      end
+
+      def create_event(type, attrs)
+        create_node(type, attrs)
       end
 
       def create_node(type, attrs)
-        @graph.create_node(type, {
+        parent.create_node(type, {
           ref_id: attrs[:id],
           name: attrs[:name]
         })
       end
 
       def create_connector(type, attrs)
-        @graph.create_connector({
+        parent.create_connector({
           ref_id: attrs[:id],
           start_ref_id: attrs[:source_ref],
           end_ref_id: attrs[:target_ref],
@@ -181,6 +225,11 @@ module Bpmn
         when /\A#{PATTERNS[:boolean]}\z/  then value == "true"
         else value
         end
+      end
+
+      # graph or sub_process inside which we want to create nodes
+      def parent
+        sub_processes.last || graph
       end
     end
   end
