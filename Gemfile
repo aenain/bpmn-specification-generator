@@ -1,4 +1,5 @@
 source 'https://rubygems.org'
+ruby '2.0.0'
 
 gem 'haml', '~> 4.0.3'
 gem 'sass', '~> 3.2.9'
