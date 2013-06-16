@@ -11,11 +11,11 @@ class Test::Unit::TestCase
   end
 
   def assert_entry_nodes(fragment, *nodes)
-    assert_equal nodes.flatten, fragment.entry_nodes
+    assert_equal nodes.flatten, fragment.entry_nodes.to_a
   end
 
   def assert_end_nodes(fragment, *nodes)
-    assert_equal nodes.flatten, fragment.end_nodes
+    assert_equal nodes.flatten, fragment.end_nodes.to_a
   end
 
   def assert_connected(node_1, node_2)
@@ -66,7 +66,7 @@ class Test::Unit::TestCase
 
       if structure_or_type.kind_of?(Array)
         structure_or_type.each_with_index do |nested_structure_or_type, nested_index|
-          node = nodes[nested_index]
+          node = nodes.to_a[nested_index]
 
           if nested_structure_or_type.kind_of?(Hash)
             assert_pattern_structure(node, nested_structure_or_type)

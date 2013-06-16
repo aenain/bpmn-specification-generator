@@ -27,9 +27,9 @@ class PatternExtractorTest < Test::Unit::TestCase
     assert_entry_nodes(graph.entry_nodes.first, nodes.first)
     assert_end_nodes(graph.end_nodes.first.end_nodes.first, nodes.last)
 
-    assert_equal [nodes[0]], graph.entry_nodes.first.entry_nodes
+    assert_equal [nodes[0]], graph.entry_nodes.first.entry_nodes.to_a
     assert_equal Bpmn::Graph::MatchedFragment, graph.entry_nodes.first.end_nodes.first.class
-    assert_equal nodes[1..-1], graph.entry_nodes.first.end_nodes.first.nodes
+    assert_equal nodes[1..-1], graph.entry_nodes.first.end_nodes.first.nodes.to_a
   end
 
   should "extract multiple merge in: A -> [B, C] -> D" do
@@ -94,7 +94,7 @@ class PatternExtractorTest < Test::Unit::TestCase
 
     extract_graph(sub_process)
 
-    sequences = sub_process.entry_nodes
+    sequences = sub_process.entry_nodes.to_a
     assert sequences.all? { |s| s.pattern_name == :sequence }
     assert_entry_nodes(sequences[0], nodes[0])
     assert_end_nodes(sequences[0], nodes[2])
@@ -141,8 +141,8 @@ class PatternExtractorTest < Test::Unit::TestCase
     extract_graph(graph)
 
     assert_full_match(graph)
-    assert_pattern_structure(sub_process.entry_nodes[0], sequence: [:task, :task])
-    assert_pattern_structure(sub_process.entry_nodes[1], sequence: [:task, :task])
+    assert_pattern_structure(sub_process.entry_nodes.first, sequence: [:task, :task])
+    assert_pattern_structure(sub_process.entry_nodes.to_a.last, sequence: [:task, :task])
     assert_pattern_structure(graph, parallel_split: [:task, :sub_process])
     assert_entry_nodes(graph.entry_nodes.first, node_a)
     assert_end_nodes(graph.end_nodes.first, sub_process)
@@ -158,8 +158,23 @@ class PatternExtractorTest < Test::Unit::TestCase
     assert_full_match(graph)
     assert_pattern_structure(graph, parallel_split: [:task, [{ sequence: [:task, :task] }, { sequence: [:task, :task] }]])
     assert_entry_nodes(graph.entry_nodes.first, nodes.first)
-    assert_end_nodes(graph.end_nodes[0].end_nodes[0], nodes[-2])
-    assert_end_nodes(graph.end_nodes[0].end_nodes[1], nodes[-1])
+    assert_end_nodes(graph.end_nodes.first.end_nodes.first, nodes[-2])
+    assert_end_nodes(graph.end_nodes.first.end_nodes.to_a.last, nodes[-1])
+  end
+
+  should "extract parallel split with gateway: A -> g -> [B, C]" do
+    graph = Bpmn::Graph::Graph.new
+    tasks = 3.times.map { graph.create_node(:task, ref_id: rand(100)) }
+    gateway = graph.create_node(:gateway, ref_id: rand(100), type: :parallel)
+    nodes = tasks.insert(1, gateway)
+    fill_graph(graph: graph, nodes: nodes, connection_mapping: { 0 => 1, 1 => [2, 3] }, end_nodes: nodes[-2..-1])
+
+    extract_graph(graph)
+
+    assert_full_match(graph)
+    assert_pattern_structure(graph, parallel_split: [:task, :gateway, [:task, :task]])
+    assert_entry_nodes(graph.entry_nodes.first, nodes[0])
+    assert_end_nodes(graph.end_nodes.first, nodes[-2..-1])
   end
 
   should "extract simple merge in: [A, B] -> C" do
@@ -172,6 +187,6 @@ class PatternExtractorTest < Test::Unit::TestCase
     assert_full_match(graph)
     assert_pattern_structure(graph, simple_merge: [[:task, :task], :task])
     assert_entry_nodes(graph.entry_nodes.first, nodes[0..1])
-    assert_end_nodes(graph.end_nodes[0], nodes[-1])
+    assert_end_nodes(graph.end_nodes.first, nodes[-1])
   end
 end
