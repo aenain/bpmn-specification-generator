@@ -1,6 +1,5 @@
 require 'active_support/concern'
 require 'active_support/inflector'
-require 'pry-debugger'
 
 module Bpmn
   module Graph

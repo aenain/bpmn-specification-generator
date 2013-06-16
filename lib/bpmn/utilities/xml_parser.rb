@@ -1,6 +1,5 @@
 require 'nokogiri'
 require 'active_support/inflector'
-require 'pry-debugger'
 
 # parses xml and builds whole graph structure
 module Bpmn

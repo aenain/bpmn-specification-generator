@@ -6,7 +6,6 @@ require 'sinatra/activerecord'
 require 'sinatra/twitter-bootstrap'
 require 'gon-sinatra'
 require 'json'
-require 'pry-debugger'
 
 # add to the load path
 MODELS_PATH = File.join('app', 'models')
