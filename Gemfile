@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 ruby '2.0.0'
 
+gem 'thin', '1.5.1'
 gem 'haml', '~> 4.0.3'
 gem 'sass', '~> 3.2.9'
 gem 'sinatra', '~> 1.4.2'
