@@ -3,7 +3,7 @@ require 'active_support/inflector'
 module Bpmn
   module Utilities
     class PatternExtractor
-      ORDER = %i(sequence multiple_merge exclusive_choice multi_choice parallel_split simple_merge synchronization)
+      ORDER = %i(sequence multiple_merge parallel_split exclusive_choice multi_choice simple_merge synchronization)
 
       attr_reader :graph
 
@@ -13,14 +13,11 @@ module Bpmn
 
       def extract
         fragment_matched = true
-        considered_patterns = %i(sequence multiple_merge parallel_split simple_merge)
 
         while fragment_matched
           fragment_matched = false
 
           ORDER.each do |pattern_name|
-            next unless considered_patterns.include?(pattern_name)
-
             finder = PatternFinder.new(graph, pattern_name)
             finder.run do |fragment|
               fragment_matched = true

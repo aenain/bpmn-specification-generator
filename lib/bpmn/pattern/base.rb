@@ -70,17 +70,24 @@ module Bpmn
       end
 
       def pass_conditions?(node, kind: [:all], type: [:all])
-        node_kind = node.class.name.demodulize.underscore.to_sym
+        match_kind?(node, kind) && match_type?(node, type)
+      end
 
-        if kind == [:all] && type == [:all]
-          true
-        elsif type == [:all]
-          kind.include?(node_kind)
-        elsif kind == [:all]
-          node.respond_to?(:type) && type.include?(node.type.to_sym)
-        else
-          kind.include?(node_kind) && node.respond_to?(:type) && type.include?(node.type.to_sym)
-        end
+      def class_to_kind(klass)
+        klass.name.demodulize.underscore.to_sym
+      end
+
+      def match_kind?(node, kind = [:all])
+        return true if kind == [:all]
+
+        node_kind = class_to_kind(node.class)
+        kind.include?(node_kind)
+      end
+
+      def match_type?(node, type = [:all])
+        return true if type == [:all]
+
+        node.respond_to?(:type) && type.include?(node.type.to_sym)
       end
     end
   end

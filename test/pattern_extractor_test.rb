@@ -15,6 +15,20 @@ class PatternExtractorTest < Test::Unit::TestCase
     assert_connected(nodes.first, nodes.last)
   end
 
+  should "extract sequence in: A -> B using events" do
+    graph = Bpmn::Graph::Graph.new
+    nodes = %i(start_event end_event).map { |type| graph.create_node(type, ref_id: rand(100)) }
+    fill_graph(graph: graph, nodes: nodes, connection_mapping: { 0 => 1 })
+
+    extract_graph(graph)
+
+    assert_full_match(graph)
+    assert_pattern_structure(graph, sequence: [:start_event, :end_event])
+    assert_entry_nodes(graph.entry_nodes.first, nodes.first)
+    assert_end_nodes(graph.end_nodes.first, nodes.last)
+    assert_connected(nodes.first, nodes.last)
+  end
+
   should "extract sequence of sequence and node in: A -> B -> C" do
     graph = Bpmn::Graph::Graph.new
     nodes = 3.times.map { graph.create_node(:task, ref_id: rand(100)) }
