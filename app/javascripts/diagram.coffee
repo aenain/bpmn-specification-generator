@@ -2,11 +2,14 @@ root = exports ? this
 root.Diagram = Diagram = {}
 
 class Diagram.Font
-  constructor: (options = {}) ->
-    @size = options.size || 12 # pixels
-    @lineHeight = options.lineHeight || 1.4 * @size
+  constructor: (@options = {}) ->
+    @size = @options.size || 12 # pixels
+    @lineHeight = @options.lineHeight || 1.4 * @size
     @family = 'Arial'
-    @color = 'black'
+    @color = '#777'
+
+  copy: ->
+    new Diagram.Font(@options)
 
 class Diagram.Measurer
   constructor: (@drawer) ->
@@ -20,38 +23,38 @@ class Diagram.Shape
       fill:
         color: 'yellow'
       stroke:
-        width: 2
-        color: 'black'
+        width: 1
+        color: '#777'
     start_event:
       fill:
         color: 'green'
       stroke:
-        width: 2
+        width: 1
         color: 'black'
     end_event:
       fill:
         color: 'red'
       stroke:
-        width: 2
+        width: 1
         color: 'black'
     matched_fragment:
       fill:
-        color: 'rgba(0, 0, 0, 0.02)'
+        color: 'rgba(0, 0, 0, 0.03)'
       stroke:
-        width: 0
-        color: 'white'
+        width: 1
+        color: 'rgba(0, 0, 0, 0.03)'
     sub_process:
       fill:
-        color: '#eee'
+        color: 'rgba(0, 0, 255, 0.1)'
       stroke:
-        width: 2
-        color: '#000'
+        width: 1
+        color: 'rgba(0, 0, 255, 0.1)'
     gateway:
       fill:
         color: 'pink'
       stroke:
-        width: 2
-        color: '#000'
+        width: 1
+        color: 'rgba(0, 0, 0, 0.4)'
 
   constructor: (@box, @type) ->
     @style = Diagram.Shape.STYLES[@type]
@@ -102,6 +105,9 @@ class Diagram.Label
   placeUnder: (boundaries) ->
     @centerUnder(boundaries)
 
+  placeUnderTop: (boundaries) ->
+    @centerUnderTop(boundaries)
+
   splitTextToFit: (boxWidth) ->
     words = @text.split(' ')
     @lines = []
@@ -130,6 +136,11 @@ class Diagram.Label
     @position.top = boundaries.bottom + @font.lineHeight
     @position.left = center.left
 
+  centerUnderTop: (boundaries) ->
+    center = @getCenterOf(boundaries)
+    @position.top = boundaries.top + @font.lineHeight
+    @position.left = center.left
+
   getCenterOf: (boundaries) ->
     center =
       left: Math.round((boundaries.left + boundaries.right) / 2)
@@ -138,23 +149,84 @@ class Diagram.Label
 class Diagram.Path
   @STYLES =
     stroke:
-      width: 2
-      color: 'black'
+      width: 1
+      color: '#000'
 
   constructor: (@waypoints) ->
     @style = Diagram.Path.STYLES
 
+class Diagram.InfoManager
+  constructor: (@element) ->
+    # nothing for now.
+
+  #
+  # @param info String - text to display
+  #
+  update: (info) ->
+    @element.innerText = info
+
+class Diagram.FragmentHover
+  constructor: () ->
+    @fragments = []
+
+  bind: (model) ->
+    @storeFragments(model.data.nodes) unless @fragments.count
+    @bindToCanvas model.canvas, (fragment) ->
+      model.onFragmentHover(fragment)
+
+  storeFragments: (nodes) ->
+    for node in nodes
+      @fragments.push(node) if node.class == 'MatchedFragment'
+
+    # the more general fragment, the later should be asked if hovered
+    @fragments.reverse()
+
+  #
+  # @param canvas HTMLElement
+  # @param callback Function - will be called on fragment hover
+  #
+  bindToCanvas: (canvas, callback) ->
+    canvas.addEventListener 'mousemove', (event) =>
+      position = @positionInside(event, canvas)
+
+      for fragment in @fragments
+        if @isHovered(fragment, position)
+          callback(fragment)
+          break
+
+  positionInside: (mouseEvent, domElement) ->
+    rectangle = domElement.getBoundingClientRect()
+
+    {
+      top: mouseEvent.clientY - rectangle.top,
+      left: mouseEvent.clientX - rectangle.left
+    }
+
+  isHovered: (fragment, position) ->
+    position.left >= fragment.position.left &&
+    position.top  >= fragment.position.top &&
+    position.left <= fragment.position.left + fragment.position.width &&
+    position.top  <= fragment.position.top + fragment.position.height
+
 class Diagram.Model
-  constructor: (@canvas, @data) ->
+  constructor: (@canvas, @infoElement, @data) ->
     @drawer = null # we have to resize canvas first
+    @info = null
 
   init: ->
     @resizeCanvas()
     @createDrawer()
+    @createInfoManager()
+
+    @drawElements()
+    @bindEvents()
 
   drawElements: ->
     @drawNodes()
     @drawConnectors()
+
+  bindEvents: ->
+    new Diagram.FragmentHover().bind(this)
 
   resizeCanvas: ->
     @canvas.width = @data.width
@@ -163,13 +235,19 @@ class Diagram.Model
   createDrawer: ->
     @drawer = new Diagram.Drawer(@canvas)
 
+  createInfoManager: ->
+    @info = new Diagram.InfoManager(@infoElement)
+
+  onFragmentHover: (fragment) ->
+    @info.update(fragment.label)
+
   drawNodes: ->
     for node in @data.nodes
       switch node.class
         when 'Task'             then @drawer.drawActivity(node.position, node.label)
         when 'StartEvent'       then @drawer.drawStartEvent(node.position, node.label)
         when 'EndEvent'         then @drawer.drawEndEvent(node.position, node.label)
-        when 'Gateway'          then @drawer.drawGateway(node.position, node.label)
+        when 'Gateway'          then @drawer.drawGateway(node.type, node.position, node.label)
         when 'SubProcess'       then @drawer.drawSubProcess(node.position, node.label)
         when 'MatchedFragment'  then @drawer.drawMatchedFragment(node.position, node.label)
 
@@ -233,12 +311,12 @@ class Diagram.Drawer
   #
   drawMatchedFragment: (position, text) ->
     shape = new Diagram.Shape(position, 'matched_fragment')
-    label = new Diagram.Label(text, @font)
-    label.setMeasurer(@measurer)
-    label.placeUnder(shape.getBoundaries())
+    # label = new Diagram.Label(text, @font)
+    # label.setMeasurer(@measurer)
+    # label.placeUnder(shape.getBoundaries())
 
     @drawRectangle(shape)
-    @drawLabel(label)
+    # @drawLabel(label)
 
   #
   # @param position Object(top, left, width, height)
@@ -248,25 +326,40 @@ class Diagram.Drawer
     shape = new Diagram.Shape(position, 'sub_process')
     label = new Diagram.Label(text, @font)
     label.setMeasurer(@measurer)
-    # TODO! place under top edge
-    label.placeUnder(shape.getBoundaries())
+    label.placeUnderTop(shape.getBoundaries())
 
     @drawRectangle(shape)
     @drawLabel(label)
 
   #
+  # @param type String (inclusive|exclusive_data|parallel|complex) - inclusive => O, exclusive_data => X, parallel => +, complex => *
   # @param position Object(top, left, width, height)
   # @param text String
   #
-  drawGateway: (position, text) ->
+  drawGateway: (type, position, text) ->
+    font = @font.copy()
+
+    switch type
+      when 'inclusive'
+        text = 'O'
+        font.size = 16
+      when 'exclusive_data'
+        text = 'X'
+        font.size = 15
+      when 'parallel'
+        text = '+'
+        font.size = 24
+      when 'complex'
+        text = '*'
+        font.size = 30
+
     shape = new Diagram.Shape(position, 'gateway')
-    label = new Diagram.Label(text, @font)
+    label = new Diagram.Label(text, font)
     label.setMeasurer(@measurer)
-    label.placeUnder(shape.getBoundaries())
+    label.placeInside(shape.getBoundaries())
 
     @drawRuby(shape)
     @drawLabel(label)
-
 
   #
   # @param waypoints [Object(top, left)]

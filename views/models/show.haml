@@ -1,4 +1,6 @@
-%canvas#canvas
+.with-hud
+  %canvas#canvas
+  #info.hud
 
 - content_for(:javascripts) do
   :coffeescript
@@ -10,9 +12,6 @@
       element.height = window.innerHeight
 
     canvas = document.querySelector('#canvas')
-    model = new Diagram.Model(canvas, gon.visualization_data)
+    info = document.querySelector('#info')
+    model = new Diagram.Model(canvas, info, gon.visualization_data)
     model.init()
-    model.drawElements()
-    # drawer = new Diagram.Drawer(canvas)
-    # drawer.drawActivity({ top: 10, left: 10, width: 100, height: 50 }, "elo morelo trello wtff ja robie")
-    # drawer.drawStartEvent({ top: 200, left: 200, width: 20, height: 20 }, "elo morelo trello wtf ja robie")
