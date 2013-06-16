@@ -23,6 +23,19 @@ module Bpmn
     class Graph
       include ::Bpmn::Graph::Building
       include ::Bpmn::Graph::Wrapping
+
+      def extend_size_if_needed
+        width = representation.position[:width]
+        height = representation.position[:height]
+
+        get_elements(type: :node).each do |node|
+          node_boundaries = node.representation.boundaries
+          width = node_boundaries[:right] if node_boundaries[:right] > width
+          height = node_boundaries[:bottom] if node_boundaries[:bottom] > height
+        end
+
+        representation.update_position(width: width + 20, height: height + 20)
+      end
     end
   end
 end

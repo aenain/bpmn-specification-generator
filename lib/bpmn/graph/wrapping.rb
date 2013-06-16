@@ -68,25 +68,24 @@ module Bpmn
       end
 
       def create_enclosing_representation
-        name = respond_to?(:pattern_name) ? pattern_name : ""
-        position = nodes.inject({}) do |position, node|
-          node_position = node.representation.position
+        name = respond_to?(:pattern_name) ? pattern_name.to_s.humanize : ""
+        boundaries = nodes.inject({}) do |boundaries, node|
+          node_boundaries = node.representation.boundaries
 
-          if position == {} # first element
-            position = node_position.dup
+          if boundaries == {} # first element
+            boundaries = node_boundaries.dup
           else
-            %i(top left).each do |margin|
-              position[margin] = [node_position[margin], position[margin]].min
+            { min: %i(top left), max: %i(bottom right) }.each do |comparement, margins|
+              margins.each do |margin|
+                boundaries[margin] = [boundaries[margin], node_boundaries[margin]].send(comparement)
+              end
             end
-
-            position[:width] = [node_position[:left] + node_position[:width] - position[:left], position[:width]].max
-            position[:height] = [node_position[:top] + node_position[:height] - position[:top], position[:height]].max
           end
 
-          position
+          boundaries
         end
 
-        self.representation = ::Bpmn::Representation.new(name: name, position: position)
+        self.representation = ::Bpmn::Representation.new(name: name, boundaries: boundaries)
       end
 
       def store_in_parent

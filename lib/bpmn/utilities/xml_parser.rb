@@ -39,6 +39,7 @@ module Bpmn
             graph.fix_missing_side_nodes
           when :bpmn_diagram
             parse_bpmn_diagram(child, data)
+            graph.extend_size_if_needed
           end
         end
 
@@ -159,6 +160,8 @@ module Bpmn
                          else
                            raise ParseError, %q(cannot resolve gateway type)
                          end
+                       else
+                         :inclusive
                        end
 
         parent.create_node(:gateway, {

@@ -15,9 +15,10 @@ module Bpmn
 
       def initialize(*args)
         super(*args)
-        @sub_processes = []
-        @entry_nodes = Set.new
-        @end_nodes = Set.new
+        @sub_processes    = []
+        @nested_processes = {}
+        @entry_nodes      = Set.new
+        @end_nodes        = Set.new
       end
 
       def first_node
@@ -58,6 +59,19 @@ module Bpmn
         start_node.connect_with(end_node, **connector_options).tap do |connector|
           store_element(connector.ref_id, connector)
         end
+      end
+
+      def most_nested_processes
+        find_nested_processes.sort.reverse.flat_map { |_, ps| ps }
+      end
+
+      def find_nested_processes(graph_or_process = self, nesting_level = 0)
+        graph_or_process.sub_processes.each do |sub_process|
+          (@nested_processes[nesting_level] ||= []) << sub_process
+          find_nested_processes(sub_process, nesting_level + 1)
+        end
+
+        @nested_processes
       end
 
       def fix_missing_side_nodes

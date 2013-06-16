@@ -13,7 +13,7 @@ module Bpmn
 
       # matched fragments will be passed to a block
       def run(&block)
-        most_nested_processes.each do |process|
+        graph.most_nested_processes.each do |process|
           find_in(process, &block)
         end
 
@@ -49,19 +49,8 @@ module Bpmn
             end
           end
         end
-      end
 
-      def most_nested_processes
-        find_nested_processes.sort.reverse.flat_map { |_, ps| ps }
-      end
-
-      def find_nested_processes(graph_or_process = @graph, nesting_level = 0)
-        graph_or_process.sub_processes.each do |sub_process|
-          (@nested_processes[nesting_level] ||= []) << sub_process
-          find_nested_processes(sub_process, nesting_level + 1)
-        end
-
-        @nested_processes
+        graph_or_process
       end
 
       def connections_method

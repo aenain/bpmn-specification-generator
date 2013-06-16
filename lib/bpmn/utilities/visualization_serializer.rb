@@ -7,21 +7,17 @@ module Bpmn
       attr_reader :graph, :json, :nodes, :connectors, :builder
 
       def initialize(graph)
-        @graph = graph
-        @builder = nil
-        @nodes = []
-        @connectors = []
+        @graph      = graph
+        @nodes      = Set.new
+        @connectors = Set.new
       end
 
       def serialize
-        @nodes, @connectors = graph.get_elements(nested: true).partition do |element|
-          element.kind_of?(::Bpmn::Graph::Node)
-        end
+        gather_immediate_elements(graph)
 
-        # matched fragments go first
-        @nodes = @nodes.partition do |node|
-          node.kind_of?(::Bpmn::Graph::MatchedFragment)
-        end.flatten(1)
+        graph.most_nested_processes.reverse.each do |sub_process|
+          gather_immediate_elements(sub_process)
+        end
 
         @json = with_builder do
           serialize_canvas
@@ -31,6 +27,24 @@ module Bpmn
       end
 
       private
+
+      def gather_immediate_elements(graph_or_process)
+        @nodes.add(graph_or_process) if graph_or_process.parent
+
+        matched_fragments, nodes = graph_or_process.get_elements(type: :node).partition do |node|
+          node.kind_of?(::Bpmn::Graph::MatchedFragment)
+        end
+
+        # sub processes are handled in a special way
+        nodes.reject! { |node| node.kind_of?(::Bpmn::Graph::SubProcess) }
+
+        connectors = graph_or_process.get_elements(type: :connector)
+
+        # added later are more general and should be first
+        matched_fragments.reverse.each { |fragment| @nodes.add(fragment) }
+        nodes.each { |node| @nodes.add(node) }
+        connectors.each { |connector| @connectors.add(connector) }
+      end
 
       def serialize_canvas
         builder.name graph.representation.name
