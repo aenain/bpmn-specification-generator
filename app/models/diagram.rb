@@ -1,7 +1,5 @@
-require 'serialize_active_record'
-
 class Diagram < ActiveRecord::Base
-  serialize :graph, format: :marshal, gzip: true
+  serialize :graph
 
   belongs_to :business_model
 

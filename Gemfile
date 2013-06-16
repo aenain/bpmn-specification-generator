@@ -11,7 +11,6 @@ gem 'jsonify', '~> 0.4.1', require: false
 gem 'activesupport', '~> 4.0.0.rc1', require: false
 gem 'activerecord', '~> 4.0.0.rc1', require: false
 gem 'sinatra-activerecord', '~> 1.3.0.beta2', github: 'sge/sinatra-activerecord', branch: 'activerecord4'
-gem 'serialize-activerecord', github: 'aenain/serialize-activerecord'
 gem 'pg', '~> 0.15.1'
 gem 'rake', '~> 10.0.4'
 gem 'gon-sinatra', '~> 0.1.0'
