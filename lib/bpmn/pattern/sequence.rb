@@ -6,7 +6,7 @@ module Bpmn
 
       def match(node)
         connection = node.back_connections.first
-        return unless has_back_connections?(node, count: 1, conditions: { kind: %i(start_event intermediate_event activity task) }) &&
+        return unless has_back_connections?(node, count: 1, conditions: { kind: %i(start_event intermediate_event activity task matched_fragment) }) &&
                       has_connections?(connection.start_node, count: 1, conditions: { kind: %i(end_event intermediate_event activity task matched_fragment) })
 
         ::Bpmn::Graph::MatchedFragment.new(pattern_name: :sequence).tap do |fragment|
