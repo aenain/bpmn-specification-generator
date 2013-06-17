@@ -3,7 +3,7 @@ require 'active_support/inflector'
 module Bpmn
   module Utilities
     class PatternExtractor
-      ORDER = %i(sequence multiple_merge parallel_split exclusive_choice multi_choice simple_merge synchronization)
+      ORDER = %i( multiple_merge parallel_split exclusive_choice multi_choice simple_merge synchronization sequence )
 
       attr_reader :graph
 
