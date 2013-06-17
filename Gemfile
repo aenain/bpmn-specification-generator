@@ -17,6 +17,8 @@ gem 'pg', '~> 0.15.1'
 gem 'rake', '~> 10.0.4'
 gem 'gon-sinatra', '~> 0.1.0'
 gem 'sinatra-twitter-bootstrap', '~> 2.3.1.1', require: 'sinatra/twitter-bootstrap'
+gem 'therubyracer', '0.11.4', require: 'v8'
+gem 'execjs', '1.4.0'
 
 group :development, :test do
   gem 'annotate', '~> 2.5.0'
