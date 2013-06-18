@@ -35,6 +35,12 @@ module Bpmn
             @#{connection}s << connection               #   @connections << connection
           end                                           # end
 
+          def remove_#{connection}s                     # def remove_connections
+            connections = @#{connection}s.dup           #   connections = @connections.dup
+            @#{connection}s.clear                       #   @connections.clear
+            connections                                 #   connections
+          end                                           # end
+
           def remove_#{connection}(connection)          # def remove_connection(connection)
             @#{connection}s.delete(connection)          #   @connections.delete(connection)
           end                                           # end

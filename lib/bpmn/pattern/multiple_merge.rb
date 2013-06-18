@@ -2,7 +2,7 @@
 module Bpmn
   module Pattern
     class MultipleMerge < Base
-      DIRECTION = :back
+      DIRECTION = :forward
 
       # A splits to B, C and merges in D
       def match(node)

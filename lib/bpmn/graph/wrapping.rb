@@ -21,8 +21,7 @@ module Bpmn
 
       def clasp_entry_nodes
         entry_nodes.each do |node|
-          node.back_connections.each do |connection|
-            node.remove_back_connection(connection)
+          node.remove_back_connections.each do |connection|
             connection.end_node = self
             add_back_connection(connection)
           end
@@ -43,8 +42,7 @@ module Bpmn
 
       def clasp_end_nodes
         end_nodes.each do |node|
-          node.connections.each do |connection|
-            node.remove_connection(connection)
+          node.remove_connections.each do |connection|
             connection.start_node = self
             add_connection(connection)
           end

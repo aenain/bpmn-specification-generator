@@ -72,6 +72,19 @@ class PatternExtractorTest < Test::Unit::TestCase
     assert_end_nodes(graph.end_nodes.first, nodes.last)
   end
 
+  should "extract sequence and then multiple merge in: A -> B -> [C, D] -> F" do
+    graph = Bpmn::Graph::Graph.new
+    nodes = %w(A B C D E).map { |name| graph.create_node(:task, name: name, ref_id: rand(100)) }
+    fill_graph(graph: graph, nodes: nodes, connection_mapping: { 0 => 1, 1 => [2, 3], [2, 3] => 4 })
+
+    extract_graph(graph)
+
+    assert_full_match(graph)
+    assert_pattern_structure(graph, multiple_merge: [{ sequence: [:task, :task] }, [:task, :task], :task])
+    assert_entry_nodes(graph.entry_nodes.first.entry_nodes.first, nodes.first)
+    assert_end_nodes(graph.end_nodes.first, nodes.last)
+  end
+
   should "extract parallel split in: A -> [B, C]" do
     graph = Bpmn::Graph::Graph.new
     nodes = 3.times.map { graph.create_node(:task, ref_id: rand(100)) }
