@@ -3,6 +3,11 @@ module Bpmn
   module Pattern
     class Sequence < Base
       DIRECTION = :back
+      RULES = [
+        ':f1 => <>:f2',
+        '~:f1 => ~<>:f2',
+        '[]~(:f1 & :f2)'
+      ]
 
       def match(node)
         connection = node.back_connections.first

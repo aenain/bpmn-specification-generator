@@ -5,21 +5,56 @@ module Bpmn
     class Base
       include Singleton
 
-      # nil or MatchedFragment
-      def self.match(node, pattern_name)
-        pattern_class(pattern_name).instance.match(node)
-      end
+      class << self
+        # nil or MatchedFragment
+        def match(node, pattern_name)
+          pattern_class(pattern_name).instance.match(node)
+        end
 
-      def self.direction(pattern_name)
-        pattern_class(pattern_name).const_get(:DIRECTION)
-      end
+        def direction(pattern_name)
+          pattern_class(pattern_name).const_get(:DIRECTION)
+        end
 
-      def self.pattern_class(pattern_name)
-        "bpmn/pattern/#{pattern_name}".camelize.constantize
+        def pattern_class(pattern_name)
+          "bpmn/pattern/#{pattern_name}".camelize.constantize
+        end
+
+        instance_eval do
+          %i(entry_arguments end_arguments substitute_rules).each do |method_name|
+            define_method(method_name) do |fragment|
+              pattern_class(fragment.pattern_name).instance.send(method_name, fragment)
+            end
+          end
+        end
       end
 
       # nil or MatchedFragment
       def match(node)
+      end
+
+      def rules
+        @rules ||= self.class.const_get(:RULES).map { |f| ::Bpmn::Specification::Rule.new(f) }
+      end
+
+      def substitute_rules(fragment)
+        [entry_arguments(fragment), end_arguments(fragment)].map do |arguments|
+          symbols_with_arguments = arguments.each_with_index.map { |arg, i| [:"f#{i+1}", arg.ref_id] }
+          substitutions = Hash[symbols_with_arguments]
+
+          ::Bpmn::Specification::RuleSet.new(rules).substitute(substitutions)
+        end
+      end
+
+      def entry_arguments(fragment)
+        fragment.nodes.map do |node|
+          node.respond_to?(:entry_arguments) ? node.entry_arguments.first : node
+        end
+      end
+
+      def end_arguments(fragment)
+        fragment.nodes.map do |node|
+          node.respond_to?(:end_arguments) ? node.end_arguments.last : node
+        end
       end
 
       private

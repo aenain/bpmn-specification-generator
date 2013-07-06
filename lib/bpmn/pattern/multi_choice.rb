@@ -3,6 +3,7 @@ module Bpmn
   module Pattern
     class MultiChoice < Base
       DIRECTION = :forward
+      RULES = []
 
       def match(node)
         match_version_1(node) || match_version_2(node)

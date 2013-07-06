@@ -3,6 +3,7 @@ module Bpmn
   module Pattern
     class Synchronization < Base
       DIRECTION = :back
+      RULES = []
 
       def match(node)
         match_version_1(node) || match_version_2(node)

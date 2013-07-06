@@ -16,6 +16,14 @@ module Bpmn
         entry_nodes | inner_nodes | end_nodes
       end
 
+      def entry_arguments
+        @entry_arguments ||= ::Bpmn::Pattern::Base.entry_arguments(self)
+      end
+
+      def end_arguments
+        @end_arguments ||= ::Bpmn::Pattern::Base.end_arguments(self)
+      end
+
       def inspect
         "MatchedFragment entry_nodes:[#{entry_nodes.map(&:inspect).join(',')}] end_nodes:[#{end_nodes.map(&:inspect).join(',')}] pattern:#{pattern_name}"
       end

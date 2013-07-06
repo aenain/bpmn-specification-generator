@@ -3,6 +3,7 @@ module Bpmn
   module Pattern
     class ExclusiveChoice < Base
       DIRECTION = :forward
+      RULES = []
 
       def match(node)
         node_a = node

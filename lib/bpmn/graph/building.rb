@@ -1,3 +1,4 @@
+require 'set'
 require 'active_support/concern'
 require 'active_support/inflector'
 

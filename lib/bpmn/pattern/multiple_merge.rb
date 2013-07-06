@@ -3,6 +3,16 @@ module Bpmn
   module Pattern
     class MultipleMerge < Base
       DIRECTION = :forward
+      RULES = [
+        ':f1 => (<>:f2 & ~<>:f3) | (~<>:f2 & <>:f3)',
+        '~:f1 => ~((<>:f2 & ~<>:f3) | (~<>:f2 & <>:f3))',
+        ':f2 | :f3 => <>:f4',
+        '~(:f2 | :f3) => ~<>:f4',
+        '[]~(:f1 & :f4)',
+        '[]~(:f2 & :f3)',
+        '[]~(:f1 & (:f2 | :f3))',
+        '[]~((:f2 | :f3) & :f4)'
+      ]
 
       # A splits to B, C and merges in D
       def match(node)
