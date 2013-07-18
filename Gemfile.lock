@@ -66,6 +66,7 @@ GEM
       sinatra
     haml (4.0.3)
       tilt
+    hashie (2.0.5)
     http_parser.rb (0.5.3)
     i18n (0.6.4)
     jsmin (1.0.1)
@@ -148,9 +149,10 @@ DEPENDENCIES
   annotate (~> 2.5.0)
   coffee-rails (~> 4.0.0)
   em-websocket (~> 0.5.0)
-  execjs (= 1.4.0)
+  execjs (~> 1.4.0)
   gon-sinatra (~> 0.1.0)
   haml (~> 4.0.3)
+  hashie (~> 2.0.5)
   jsonify (~> 0.4.1)
   nokogiri
   pg (~> 0.15.1)
@@ -163,5 +165,5 @@ DEPENDENCIES
   sinatra-assetpack (~> 0.2.2)
   sinatra-contrib (~> 1.4.0)
   sinatra-twitter-bootstrap (~> 2.3.1.1)
-  therubyracer (= 0.11.4)
+  therubyracer (~> 0.11.4)
   thin (= 1.5.1)

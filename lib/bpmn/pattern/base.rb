@@ -1,4 +1,5 @@
 require 'singleton'
+require 'active_support/inflector'
 
 module Bpmn
   module Pattern
@@ -15,12 +16,22 @@ module Bpmn
           pattern_class(pattern_name).const_get(:DIRECTION)
         end
 
+        def count_arguments(pattern_name)
+          pattern_class(pattern_name).const_get(:ARGUMENT_COUNT)
+        end
+
         def pattern_class(pattern_name)
           "bpmn/pattern/#{pattern_name}".camelize.constantize
         end
 
+        def substitute_rules(fragment, rule_definitions)
+          pattern_name = fragment.pattern_name
+          definitions  = rule_definitions.send(pattern_name)
+          pattern_class(pattern_name).instance.substitute_rules(fragment, definitions)
+        end
+
         instance_eval do
-          %i(entry_arguments end_arguments substitute_rules).each do |method_name|
+          %i(entry_arguments end_arguments).each do |method_name|
             define_method(method_name) do |fragment|
               pattern_class(fragment.pattern_name).instance.send(method_name, fragment)
             end
@@ -32,16 +43,14 @@ module Bpmn
       def match(node)
       end
 
-      def rules
-        @rules ||= self.class.const_get(:RULES).map { |f| ::Bpmn::Specification::Rule.new(f) }
-      end
+      def substitute_rules(fragment, definitions)
+        return [[], []] unless definitions
 
-      def substitute_rules(fragment)
         [entry_arguments(fragment), end_arguments(fragment)].map do |arguments|
           symbols_with_arguments = arguments.each_with_index.map { |arg, i| [:"f#{i+1}", arg.ref_id] }
           substitutions = Hash[symbols_with_arguments]
-
-          ::Bpmn::Specification::RuleSet.new(rules).substitute(substitutions)
+          require 'pry-debugger'; binding.pry
+          definitions.substitute(substitutions)
         end
       end
 
@@ -58,6 +67,14 @@ module Bpmn
       end
 
       private
+
+      def build_fragment(&block)
+        ::Bpmn::Graph::MatchedFragment.new(pattern_name: pattern_name.to_sym).tap(&block)
+      end
+
+      def pattern_name
+        self.class.name.demodulize.underscore
+      end
 
       # Examples:
       # has_conncetions?(node, count: 1)

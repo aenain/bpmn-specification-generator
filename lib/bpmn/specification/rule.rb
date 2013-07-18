@@ -1,10 +1,11 @@
 module Bpmn
   module Specification
     class Rule
-      attr_reader :formula
+      attr_reader :formula, :argument_names
 
       def initialize(formula)
         @formula = formula
+        @argument_names = @formula.scan(/:f\d+/)
       end
 
       def substitute!(substitutions = {})

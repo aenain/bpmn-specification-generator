@@ -3,7 +3,7 @@ module Bpmn
   module Pattern
     class ParallelSplit < Base
       DIRECTION = :forward
-      RULES = []
+      ARGUMENT_COUNT = 3
 
       def match(node)
         match_version_1(node) || match_version_2(node) || match_version_3(node)
@@ -26,10 +26,11 @@ module Bpmn
           pass_conditions?(node, kind: %i(matched_fragment activity task))
         end.all?
 
-        ::Bpmn::Graph::MatchedFragment.new(pattern_name: :parallel_split).tap do |fragment|
-          fragment.add_entry_node(node_a)
-          fragment.add_end_node(sub_process)
-          fragment.add_inner_connections(connection)
+        build_fragment do |f|
+          f.add_entry_node(node_a)
+          f.add_end_node(sub_process)
+          f.add_inner_connections(connection)
+          # TODO! define arguments for logical specification?
         end
       end
 
@@ -43,10 +44,10 @@ module Bpmn
         return unless has_back_connections?(node_b, count: 1) &&
                       has_back_connections?(node_c, count: 1)
 
-        ::Bpmn::Graph::MatchedFragment.new(pattern_name: :parallel_split).tap do |fragment|
-          fragment.add_entry_node(node_a)
-          fragment.add_end_nodes(node_b, node_c)
-          fragment.add_inner_connections(connections)
+        build_fragment do |f|
+          f.add_entry_node(node_a)
+          f.add_end_nodes(node_b, node_c)
+          f.add_inner_connections(connections)
         end
       end
 
@@ -63,11 +64,11 @@ module Bpmn
         return unless has_back_connections?(node_b, count: 1) &&
                       has_back_connections?(node_c, count: 1)
 
-        ::Bpmn::Graph::MatchedFragment.new(pattern_name: :parallel_split).tap do |fragment|
-          fragment.add_entry_node(node_a)
-          fragment.add_inner_node(gateway)
-          fragment.add_end_nodes(node_b, node_c)
-          fragment.add_inner_connections(node_a.connections + gateway.connections)
+        build_fragment do |f|
+          f.add_entry_node(node_a)
+          f.add_inner_node(gateway)
+          f.add_end_nodes(node_b, node_c)
+          f.add_inner_connections(node_a.connections + gateway.connections)
         end
       end
     end

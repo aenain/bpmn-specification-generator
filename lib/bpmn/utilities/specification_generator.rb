@@ -1,10 +1,11 @@
 module Bpmn
   module Utilities
     class SpecificationGenerator
-      attr_reader :graph, :specification
+      attr_reader :graph, :specification, :rule_definitions
 
-      def initialize(graph_with_patterns)
+      def initialize(graph_with_patterns, rule_definitions)
         @graph = graph_with_patterns
+        @rule_definitions = rule_definitions
         @specification = ::Bpmn::Specification::Specification.new
       end
 
@@ -22,7 +23,7 @@ module Bpmn
           end
         end
 
-        entry_rules, end_rules = ::Bpmn::Pattern::Base.substitute_rules(fragment)
+        entry_rules, end_rules = ::Bpmn::Pattern::Base.substitute_rules(fragment, rule_definitions)
         specification << entry_rules
         specification << end_rules unless entry_rules == end_rules
       end

@@ -3,7 +3,7 @@ module Bpmn
   module Pattern
     class Synchronization < Base
       DIRECTION = :back
-      RULES = []
+      ARGUMENT_COUNT = 3
 
       def match(node)
         match_version_1(node) || match_version_2(node)
@@ -26,10 +26,10 @@ module Bpmn
           pass_conditions?(node, kind: %i(matched_fragment activity task))
         end.all?
 
-        ::Bpmn::Graph::MatchedFragment.new(pattern_name: :synchronization).tap do |fragment|
-          fragment.add_entry_node(sub_process)
-          fragment.add_end_node(node_d)
-          fragment.add_inner_connections(connection)
+        build_fragment do |f|
+          f.add_entry_node(sub_process)
+          f.add_end_node(node_d)
+          f.add_inner_connections(connection)
         end
       end
 
@@ -46,11 +46,11 @@ module Bpmn
         return unless has_connections?(node_b, count: 1) &&
                       has_connections?(node_a, count: 1)
 
-        ::Bpmn::Graph::MatchedFragment.new(pattern_name: :synchronization).tap do |fragment|
-          fragment.add_entry_nodes(node_a, node_b)
-          fragment.add_inner_node(gateway)
-          fragment.add_end_node(node_c)
-          fragment.add_inner_connections(gateway.back_connections + gateway.connections)
+        build_fragment do |f|
+          f.add_entry_nodes(node_a, node_b)
+          f.add_inner_node(gateway)
+          f.add_end_node(node_c)
+          f.add_inner_connections(gateway.back_connections + gateway.connections)
         end
       end
     end

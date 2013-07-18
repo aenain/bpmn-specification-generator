@@ -3,16 +3,7 @@ module Bpmn
   module Pattern
     class MultipleMerge < Base
       DIRECTION = :forward
-      RULES = [
-        ':f1 => (<>:f2 & ~<>:f3) | (~<>:f2 & <>:f3)',
-        '~:f1 => ~((<>:f2 & ~<>:f3) | (~<>:f2 & <>:f3))',
-        ':f2 | :f3 => <>:f4',
-        '~(:f2 | :f3) => ~<>:f4',
-        '[]~(:f1 & :f4)',
-        '[]~(:f2 & :f3)',
-        '[]~(:f1 & (:f2 | :f3))',
-        '[]~((:f2 | :f3) & :f4)'
-      ]
+      ARGUMENT_COUNT = 4
 
       # A splits to B, C and merges in D
       def match(node)
@@ -26,11 +17,11 @@ module Bpmn
 
         node_d = node_b.forward_nodes.first
 
-        ::Bpmn::Graph::MatchedFragment.new(pattern_name: :multiple_merge).tap do |fragment|
-          fragment.add_entry_node(node_a)
-          fragment.add_end_node(node_d)
-          fragment.add_inner_nodes(node_b, node_c)
-          fragment.add_inner_connections(node_a.connections + node_b.connections + node_c.connections)
+        build_fragment do |f|
+          f.add_entry_node(node_a)
+          f.add_end_node(node_d)
+          f.add_inner_nodes(node_b, node_c)
+          f.add_inner_connections(node_a.connections + node_b.connections + node_c.connections)
         end
       end
     end

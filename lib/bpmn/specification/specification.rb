@@ -8,7 +8,7 @@ module Bpmn
       end
 
       def << (rule_set)
-        rule_sets << rule_set
+        rule_sets << rule_set unless rule_set.empty?
       end
 
       def to_s
