@@ -1,5 +1,7 @@
 module Bpmn
   module Specification
+    class MissingSpecification < StandardError; end
+
     class Specification
       attr_accessor :rule_sets
 

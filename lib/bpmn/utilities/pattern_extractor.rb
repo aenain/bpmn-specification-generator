@@ -3,6 +3,8 @@ require 'active_support/inflector'
 module Bpmn
   module Utilities
     class PatternExtractor
+      class NotFullyMatched < StandardError; end
+
       ORDER = %i(sequence multiple_merge parallel_split exclusive_choice multi_choice simple_merge synchronization)
 
       attr_reader :graph
@@ -29,7 +31,15 @@ module Bpmn
           end
         end
 
+        ensure_graph_from_patterns
+
         graph
+      end
+
+      private
+
+      def ensure_graph_from_patterns
+        raise NotFullyMatched, "graph is not built only from defined patterns" unless graph.from_patterns_only?
       end
     end
   end

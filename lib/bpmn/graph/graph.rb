@@ -36,6 +36,12 @@ module Bpmn
 
         representation.update_position(width: width + 20, height: height + 20)
       end
+
+      def from_patterns_only?
+        entry_nodes.count == 1 &&
+        entry_nodes == end_nodes &&
+        entry_nodes.first.kind_of?(MatchedFragment)
+      end
     end
   end
 end

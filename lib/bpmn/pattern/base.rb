@@ -44,12 +44,11 @@ module Bpmn
       end
 
       def substitute_rules(fragment, definitions)
-        return [[], []] unless definitions
+        raise ::Bpmn::Specification::MissingSpecification, "logical specification for #{fragment.pattern_name} missing" if definitions.nil? || definitions.empty?
 
         [entry_arguments(fragment), end_arguments(fragment)].map do |arguments|
           symbols_with_arguments = arguments.each_with_index.map { |arg, i| [:"f#{i+1}", arg.ref_id] }
           substitutions = Hash[symbols_with_arguments]
-          require 'pry-debugger'; binding.pry
           definitions.substitute(substitutions)
         end
       end
