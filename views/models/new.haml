@@ -1,12 +1,25 @@
-%form.form-horizontal(method="post" action="/models" enctype="multipart/form-data")
-  .control-group
-    %label.control-label(for="business_model_description") Description
-    .controls
-      %input(type="text" name="business_model[description]" id="business_model_description")
-  .control-group
-    %label.control-label(for="business_model_raw_xml") XML Model
-    .controls
-      %input(type="file" name="business_model[raw_xml]" id="business_model_raw_xml")
-  .control-group
-    .controls
-      %input.btn.btn-primary(type="submit" value="Create")
+= form '/models', :create, enctype: "multipart/form-data", class: "form-horizontal"
+
+.control-group
+  = label :business_model, :description, nil, class: "control-label"
+  .controls
+    = input :business_model, :description, value: @model.description
+
+.control-group
+  = label :business_model, :raw_xml, "XML Model", class: "control-label"
+  .controls
+    = input :business_model, :raw_xml, type: "file", value: @model.raw_xml
+
+.control-group
+  = label :business_model, :rule_definitions, "YAML Rule Definitions", class: "control-label"
+  .controls
+    = textarea :business_model, :rule_definitions, @model.rule_definitions || "", style: "width: 400px; height: 400px"
+
+.control-group
+  .controls
+    = submit "Create", class: "btn btn-primary"
+
+:javascript
+  // fix bug with adding spaces before a pattern_name
+  var yaml = $("#business_model_rule_definitions").text();
+  $("#business_model_rule_definitions").text(yaml.replace(/^\s+([a-zA-Z0-9])/m, '$1'));

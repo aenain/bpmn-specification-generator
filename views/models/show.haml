@@ -2,6 +2,9 @@
   %canvas#canvas
   #info.hud
 
+- if @model.logical_specification?
+  %div= @model.logical_specification
+
 - content_for(:javascripts) do
   :coffeescript
     fullscreenElements = document.querySelectorAll("[data-fullscreen='true']")

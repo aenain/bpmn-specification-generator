@@ -4,6 +4,8 @@ require 'sinatra/assetpack'
 require 'sinatra/content_for'
 require 'sinatra/activerecord'
 require 'sinatra/twitter-bootstrap'
+require 'sinatra/form_helpers'
+require 'sinatra/flash'
 require 'gon-sinatra'
 require 'json'
 require 'execjs'
@@ -22,6 +24,9 @@ class App < Sinatra::Base
   set :root, __dir__
   set :bind, ARGV.first if /\A(\d{1,3}\.){3}\d{1,3}\z/ =~ ARGV.first
 
+  enable :sessions
+
+  register Sinatra::Flash
   register Sinatra::AssetPack
   register Sinatra::ActiveRecordExtension
   register Sinatra::Twitter::Bootstrap::Assets
@@ -41,6 +46,7 @@ class App < Sinatra::Base
     include Rack::Utils
     alias_method :h, :escape_html
   end
+  helpers Sinatra::FormHelpers
 
   # routing
   get '/' do
@@ -48,27 +54,51 @@ class App < Sinatra::Base
   end
 
   get '/models/new' do
+    definitions = File.read("./config/rules.yml")
+    model_params = { rule_definitions: definitions }.reverse_merge(params[:business_model] || {})
+    @model = BusinessModel.new(model_params)
+
     haml 'models/new'.to_sym
   end
 
   post '/models' do
-    @model = BusinessModel.new
-    @model.description = params[:business_model][:description]
-    @model.raw_xml = params[:business_model][:raw_xml][:tempfile].read
+    @errors = []
+    @notices = []
 
-    diagram = @model.build_diagram
-    diagram.build_graph(@model.raw_xml)
-    diagram.prepare_visualization
+    # simple params[:business_model][:raw_xml] is not working.
+    raw_xml = params[:business_model][:raw_xml]
+    @model = BusinessModel.new(params[:business_model].merge(raw_xml: nil))
 
-    diagram = @model.build_diagram_with_patterns(graph: diagram.graph)
-    diagram.extract_patterns
-    diagram.prepare_visualization
-
-    if @model.save
-      redirect "/models/#{@model.id}"
+    if raw_xml.nil? || @model.rule_definitions.empty?
+      @errors << "Both XML Model and Rule definitions have to be specified"
     else
-      # TODO! error handling?
-      redirect "/models/new"
+      @model.raw_xml = params[:business_model][:raw_xml][:tempfile].read
+
+      begin
+        diagram = @model.build_diagram
+        diagram.build_graph(@model.raw_xml)
+
+        diagram = @model.build_diagram_with_patterns(graph: diagram.graph)
+        diagram.extract_patterns
+        diagram.prepare_visualization
+
+        @model.build_logical_specification
+      rescue Bpmn::Utilities::PatternExtractor::NotFullyMatched, Bpmn::Specification::MissingSpecification => e
+        @notices << e.to_s
+      end
+
+      flash.next[:notice] = @notices.join(', ') unless @notices.empty?
+
+      if @model.save
+        redirect "/models/#{@model.id}"
+      else
+        @errors.concat @model.errors.full_messages
+      end
+    end
+
+    unless @errors.empty?
+      flash.now[:error] = @errors.join(', ')
+      haml 'models/new'.to_sym
     end
   end
 

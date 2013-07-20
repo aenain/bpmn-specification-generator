@@ -8,6 +8,8 @@ gem 'sinatra', '~> 1.4.2'
 gem 'coffee-rails', '~> 4.0.0'
 gem 'sinatra-assetpack', '~> 0.2.2', require: 'sinatra/assetpack'
 gem 'sinatra-contrib', '~> 1.4.0', require: false
+gem 'sinatra-formhelpers-ng', '~> 1.7.0'
+gem 'sinatra-flash', '~> 0.3.0'
 gem 'nokogiri', require: false
 gem 'jsonify', '~> 0.4.1', require: false
 gem 'activesupport', '~> 4.0.0.rc1', require: false
