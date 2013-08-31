@@ -1,11 +1,6 @@
 = form '/models', :create, enctype: "multipart/form-data", class: "form-horizontal"
 
 .control-group
-  = label :business_model, :description, nil, class: "control-label"
-  .controls
-    = input :business_model, :description, value: @model.description
-
-.control-group
   = label :business_model, :raw_xml, "XML Model", class: "control-label"
   .controls
     = input :business_model, :raw_xml, type: "file", value: @model.raw_xml

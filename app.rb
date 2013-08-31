@@ -83,7 +83,7 @@ class App < Sinatra::Base
         diagram.prepare_visualization
 
         @model.build_logical_specification
-      rescue Bpmn::Utilities::PatternExtractor::NotFullyMatched, Bpmn::Specification::MissingSpecification => e
+      rescue Bpmn::Utilities::PatternExtractor::NotFullyMatched, Bpmn::Specification::MissingSpecification, Bpmn::Utilities::RuleParser::InvalidPatternFormulas => e
         @notices << e.to_s
       end
 
@@ -105,7 +105,7 @@ class App < Sinatra::Base
   get '/models/:id' do
     @model = BusinessModel.find(params[:id])
     diagram = @model.diagram_with_patterns || @model.diagram
-    gon.visualization_data = JSON.parse(diagram.visualization)
+    gon.visualization_data = diagram.visualization ? JSON.parse(diagram.visualization) : {}
     haml 'models/show'.to_sym
   end
 

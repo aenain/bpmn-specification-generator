@@ -4,7 +4,7 @@ class BusinessModel < ActiveRecord::Base
   has_one :diagram, -> { where(pattern_extraction: false) }
   has_one :diagram_with_patterns, -> { where(pattern_extraction: true) }, class_name: "Diagram"
 
-  validates :diagram, :description, presence: true
+  validates :diagram, presence: true
 
   def build_logical_specification
     definitions = Bpmn::Utilities::RuleParser.new(rule_definitions).parse
