@@ -12,9 +12,9 @@ gem 'sinatra-formhelpers-ng', '~> 1.7.0'
 gem 'sinatra-flash', '~> 0.3.0'
 gem 'nokogiri', require: false
 gem 'jsonify', '~> 0.4.1', require: false
-gem 'activesupport', '~> 4.0.0.rc1', require: false
-gem 'activerecord', '~> 4.0.0.rc1', require: false
-gem 'sinatra-activerecord', '~> 1.3.0.beta2', github: 'sge/sinatra-activerecord', branch: 'activerecord4'
+gem 'activesupport', '~> 4.0.0', require: false
+gem 'activerecord', '~> 4.0.0', require: false
+gem 'sinatra-activerecord', '~> 1.2.3'
 gem 'pg', '~> 0.15.1'
 gem 'rake', '~> 10.0.4'
 gem 'gon-sinatra', '~> 0.1.0'
